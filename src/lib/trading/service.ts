@@ -282,6 +282,29 @@ export async function recordWithdrawal(
   await getStore().logTransfer({ userId, kind: "withdraw", ...args });
 }
 
+/** Record a completed SOL⇄USDC conversion for the activity tab. */
+export async function recordConversion(
+  userId: string,
+  args: {
+    from: "SOL" | "USDC";
+    fromAmount: number;
+    to: "SOL" | "USDC";
+    toAmount: number;
+    txSignature: string;
+  },
+): Promise<void> {
+  await getStore().ensureUser(userId);
+  await getStore().logTransfer({
+    userId,
+    kind: "convert",
+    asset: args.from,
+    amount: args.fromAmount,
+    toAsset: args.to,
+    toAmount: args.toAmount,
+    txSignature: args.txSignature,
+  });
+}
+
 /** Global activity feed: recent trades across all users, paginated. */
 export async function getFeed(limit: number, offset: number): Promise<FeedActivity[]> {
   return getStore().getRecentTrades(limit, offset);

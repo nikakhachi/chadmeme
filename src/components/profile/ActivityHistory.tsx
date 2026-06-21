@@ -1,5 +1,5 @@
 "use client";
-import { ArrowDownToLine, ArrowUpFromLine } from "lucide-react";
+import { ArrowDownToLine, ArrowUpFromLine, ArrowDownUp } from "lucide-react";
 import { useActivity } from "@/hooks/use-profile-data";
 import { TokenAvatar } from "@/components/ui/token-avatar";
 import { AssetIcon } from "@/components/ui/asset-icon";
@@ -70,7 +70,40 @@ function TradeRow({ item }: { item: Extract<ActivityItem, { type: "trade" }> }) 
   );
 }
 
-function TransferRow({ item }: { item: Extract<ActivityItem, { type: "deposit" | "withdraw" }> }) {
+function TransferRow({
+  item,
+}: {
+  item: Extract<ActivityItem, { type: "deposit" | "withdraw" | "convert" }>;
+}) {
+  const fmt = (n: number, a: "SOL" | "USDC") =>
+    n.toLocaleString(undefined, { maximumFractionDigits: a === "SOL" ? 4 : 2 });
+
+  if (item.type === "convert") {
+    return (
+      <>
+        <span className="grid size-7 place-items-center rounded-full bg-elevated text-muted">
+          <ArrowDownUp className="size-4" />
+        </span>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-1.5 text-sm font-semibold">
+            Convert
+            <AssetIcon asset={item.asset} className="size-3.5" /> {item.asset}
+            <span className="text-muted">→</span>
+            {item.toAsset && <AssetIcon asset={item.toAsset} className="size-3.5" />}
+            {item.toAsset}
+          </div>
+          <div className="text-xs text-muted">{timeAgo(new Date(item.createdAt))} ago</div>
+        </div>
+        <div className="text-right text-sm">
+          <div className="font-semibold text-down">−{fmt(item.amount, item.asset)} {item.asset}</div>
+          {item.toAsset && item.toAmount != null && (
+            <div className="text-xs text-up">+{fmt(item.toAmount, item.toAsset)} {item.toAsset}</div>
+          )}
+        </div>
+      </>
+    );
+  }
+
   const isDeposit = item.type === "deposit";
   return (
     <>
@@ -92,8 +125,7 @@ function TransferRow({ item }: { item: Extract<ActivityItem, { type: "deposit" |
       </div>
       <div className={cn("text-right text-sm font-semibold", isDeposit ? "text-up" : "text-down")}>
         {isDeposit ? "+" : "−"}
-        {item.amount.toLocaleString(undefined, { maximumFractionDigits: item.asset === "SOL" ? 4 : 2 })}{" "}
-        {item.asset}
+        {fmt(item.amount, item.asset)} {item.asset}
       </div>
     </>
   );

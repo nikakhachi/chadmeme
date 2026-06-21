@@ -73,12 +73,14 @@ export interface TradingStore {
     payAsset: "SOL" | "USDC";
     txSignature: string;
   }): Promise<TradeRecord>;
-  /** Record an app-initiated transfer (withdrawal) for the activity tab. */
+  /** Record an app-initiated transfer (withdrawal/conversion) for activity. */
   logTransfer(args: {
     userId: string;
-    kind: "deposit" | "withdraw";
+    kind: "deposit" | "withdraw" | "convert";
     asset: "SOL" | "USDC";
     amount: number;
+    toAsset?: "SOL" | "USDC";
+    toAmount?: number;
     txSignature: string;
   }): Promise<void>;
   /** Read a user's recorded transfers (withdrawals), newest first. */

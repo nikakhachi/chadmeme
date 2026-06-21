@@ -60,7 +60,12 @@ export function useConvert() {
       const sendRes = await fetch("/api/convert/send", {
         method: "POST",
         headers,
-        body: JSON.stringify({ signedTransaction: bytesToBase64(signedTransaction) }),
+        body: JSON.stringify({
+          signedTransaction: bytesToBase64(signedTransaction),
+          from,
+          fromAmount: amount,
+          toAmount: built.outAmount,
+        }),
       });
       const sent = await sendRes.json();
       if (!sendRes.ok) {
@@ -70,8 +75,11 @@ export function useConvert() {
       }
 
       toastTx(`Converted ${from} → ${from === "SOL" ? "USDC" : "SOL"}`, sent.signature);
-      mutate((key) => Array.isArray(key) && key[0] === "/api/account");
-      mutate((key) => typeof key === "string" && key.startsWith("/api/wallet/balance"));
+      mutate(
+        (key) =>
+          (Array.isArray(key) && typeof key[0] === "string" && key[0].startsWith("/api/account")) ||
+          (typeof key === "string" && key.startsWith("/api/wallet/balance")),
+      );
       return true;
     } catch (err) {
       setError(err instanceof Error ? err.message : "Conversion failed.");

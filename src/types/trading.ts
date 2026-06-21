@@ -73,20 +73,23 @@ export interface FeedActivity {
   createdAt: string;
 }
 
-/** A deposit or withdrawal of SOL/USDC, shown in the activity tab. */
+/** A deposit, withdrawal, or SOL⇄USDC conversion, shown in the activity tab. */
 export interface TransferRecord {
   id: string;
-  kind: "deposit" | "withdraw";
+  kind: "deposit" | "withdraw" | "convert";
   asset: "SOL" | "USDC";
   amount: number;
+  /** Destination asset/amount (conversions only). */
+  toAsset?: "SOL" | "USDC" | null;
+  toAmount?: number | null;
   txSignature: string | null;
   createdAt: string;
 }
 
-/** A unified activity-tab item: a swap, a deposit, or a withdrawal. */
+/** A unified activity-tab item: a swap, deposit, withdrawal, or conversion. */
 export type ActivityItem =
   | ({ type: "trade" } & TradeRecord)
-  | ({ type: "deposit" | "withdraw" } & TransferRecord);
+  | ({ type: "deposit" | "withdraw" | "convert" } & TransferRecord);
 
 /** A single point in a user's net-worth history chart. */
 export interface NetworthPoint {

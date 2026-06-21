@@ -268,13 +268,15 @@ export const supabaseStore: TradingStore = {
     };
   },
 
-  async logTransfer({ userId, kind, asset, amount, txSignature }) {
+  async logTransfer({ userId, kind, asset, amount, toAsset, toAmount, txSignature }) {
     const db = getSupabaseAdmin();
     await db.from("transfers").insert({
       user_id: userId,
       kind,
       asset,
       amount,
+      to_asset: toAsset ?? null,
+      to_amount: toAmount ?? null,
       tx_signature: txSignature,
     });
   },
@@ -293,6 +295,8 @@ export const supabaseStore: TradingStore = {
         kind: row.kind as TransferRecord["kind"],
         asset: row.asset as TransferRecord["asset"],
         amount: n(row.amount),
+        toAsset: (row.to_asset as TransferRecord["toAsset"]) ?? null,
+        toAmount: row.to_amount == null ? null : n(row.to_amount),
         txSignature: (row.tx_signature as string) ?? null,
         createdAt: String(row.created_at),
       }),
