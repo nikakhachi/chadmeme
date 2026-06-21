@@ -6,12 +6,18 @@ const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
 /** Client hook for the trending token list, refreshed periodically. */
 export function useTrending(limit = 20) {
-  const { data, error, isLoading } = useSWR<{ tokens: Token[] }>(
+  const { data, error, isLoading, isValidating, mutate } = useSWR<{ tokens: Token[] }>(
     `/api/tokens/trending?limit=${limit}`,
     fetcher,
     { refreshInterval: 20_000, revalidateOnFocus: false },
   );
-  return { tokens: data?.tokens ?? [], error, isLoading };
+  return {
+    tokens: data?.tokens ?? [],
+    error,
+    isLoading,
+    isValidating,
+    refresh: () => mutate(),
+  };
 }
 
 /** Live token data for a set of watchlisted addresses (skips when empty). */

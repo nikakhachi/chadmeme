@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { Star } from "lucide-react";
+import { RefreshCw, Star } from "lucide-react";
 import { useTrending, useWatchlistTokens } from "@/hooks/use-trending";
 import { useWatchlist } from "@/components/watchlist/watchlist-context";
 import { ActivityFeed } from "@/components/feed/ActivityFeed";
@@ -56,7 +56,7 @@ function TokensPanel() {
 
   return (
     <>
-      <div className="flex gap-1.5 px-3 py-3">
+      <div className="flex items-center gap-1.5 px-3 py-3">
         {TABS.map((t) => (
           <button
             key={t}
@@ -69,6 +69,16 @@ function TokensPanel() {
             {t}
           </button>
         ))}
+        {!isWatchlist && (
+          <button
+            onClick={() => trending.refresh()}
+            aria-label="Refresh trending"
+            title="Refresh"
+            className="ml-auto rounded-md p-1 text-muted hover:bg-elevated hover:text-foreground"
+          >
+            <RefreshCw className={cn("size-3.5", trending.isValidating && "animate-spin")} />
+          </button>
+        )}
       </div>
 
       <div className="flex-1 overflow-y-auto px-2 pb-4">
