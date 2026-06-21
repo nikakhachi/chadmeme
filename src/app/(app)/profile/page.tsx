@@ -77,7 +77,7 @@ export default function ProfilePage() {
       {/* Net worth */}
       <div className="mb-6 rounded-xl border border-line bg-panel p-5">
         <div className="mb-1 text-sm text-muted">Net worth</div>
-        <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="flex items-baseline gap-3">
             <span className="text-3xl font-bold">
               {formatUsd(account?.totalValueUsd ?? 0)}
