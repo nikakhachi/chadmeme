@@ -95,6 +95,11 @@ export async function getAccountView(
 
   // 24h change from net-worth snapshots (sampled on trades).
   const series = await store.getNetworthSeries(userId);
+  // Seed a first point so the chart shows a line/dot once funded (e.g. cash, no
+  // positions yet) instead of being blank.
+  if (series.length === 0 && totalValueUsd > 0) {
+    await store.snapshotNetworth(userId, totalValueUsd);
+  }
   const dayAgo = Date.now() / 1000 - 86_400;
   const past = [...series].reverse().find((p) => p.time <= dayAgo) ?? series[0];
   const change24hUsd = past ? totalValueUsd - past.valueUsd : 0;

@@ -2,6 +2,7 @@
 import { useMemo, useState } from "react";
 import { useAuth } from "@/components/auth/auth-context";
 import { useAccount } from "@/hooks/use-account";
+import { useWalletBalance } from "@/hooks/use-wallet-balance";
 import { useExecuteTrade } from "@/hooks/use-execute-trade";
 import { Button } from "@/components/ui/button";
 import { AssetIcon } from "@/components/ui/asset-icon";
@@ -22,6 +23,7 @@ function fmtAmount(n: number, max = 6): string {
 export function TradePanel({ token }: { token: TokenDetail }) {
   const { authenticated, login } = useAuth();
   const { account, positions } = useAccount(authenticated);
+  const { solBalance, usdcBalance } = useWalletBalance(); // live (RPC, ~7s)
   const { placeTrade, pending, error } = useExecuteTrade();
   const [side, setSide] = useState<Side>("buy");
   const [payAsset, setPayAsset] = useState<PayAsset>("SOL");
@@ -34,7 +36,7 @@ export function TradePanel({ token }: { token: TokenDetail }) {
   const holding = position?.amount ?? 0;
 
   const solPrice = account?.solPriceUsd ?? 0;
-  const payBalance = payAsset === "SOL" ? account?.solBalance ?? 0 : account?.usdcBalance ?? 0;
+  const payBalance = payAsset === "SOL" ? solBalance : usdcBalance;
   const payPrice = payAsset === "SOL" ? solPrice : 1;
   const amt = Number(amount) || 0;
 
@@ -49,14 +51,17 @@ export function TradePanel({ token }: { token: TokenDetail }) {
     return payPrice > 0 ? usd / payPrice : 0;
   }, [side, amt, payPrice, token.priceUsd]);
 
+  // Max spendable/sellable for the current side (SOL keeps a gas reserve).
+  const maxAmount =
+    side === "buy"
+      ? payAsset === "SOL"
+        ? Math.max(0, payBalance - SOL_GAS_RESERVE)
+        : payBalance
+      : holding;
+  const currentPct = maxAmount > 0 ? Math.min(100, Math.round((amt / maxAmount) * 100)) : 0;
+
   function setPercent(pct: number) {
-    if (side === "buy") {
-      let max = payBalance;
-      if (payAsset === "SOL") max = Math.max(0, payBalance - SOL_GAS_RESERVE);
-      setAmount(String(Number(((max * pct) / 100).toFixed(6))));
-    } else {
-      setAmount(String(Number(((holding * pct) / 100).toFixed(6))));
-    }
+    setAmount(String(Number(((maxAmount * pct) / 100).toFixed(6))));
   }
 
   async function submit() {
@@ -155,6 +160,22 @@ export function TradePanel({ token }: { token: TokenDetail }) {
         ))}
       </div>
 
+      {/* Custom percentage slider */}
+      <div className="mb-3 flex items-center gap-2">
+        <input
+          type="range"
+          min={0}
+          max={100}
+          value={currentPct}
+          onChange={(e) => setPercent(Number(e.target.value))}
+          disabled={maxAmount <= 0}
+          className="h-1 w-full accent-brand disabled:opacity-40"
+        />
+        <span className="w-9 shrink-0 text-right text-xs tabular-nums text-muted">
+          {currentPct}%
+        </span>
+      </div>
+
       {/* Estimate */}
       <div className="mb-3 flex justify-between text-xs text-muted">
         <span>You receive</span>
@@ -190,9 +211,9 @@ export function TradePanel({ token }: { token: TokenDetail }) {
         )}
       </div>
 
-      {authenticated && account && (
+      {authenticated && (
         <div className="mt-1 text-right text-[11px] text-subtle">
-          Balance: {fmtAmount(account.solBalance)} SOL · {formatUsd(account.usdcBalance)} USDC
+          Balance: {fmtAmount(solBalance)} SOL · {formatUsd(usdcBalance)} USDC
         </div>
       )}
 

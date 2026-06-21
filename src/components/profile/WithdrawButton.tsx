@@ -1,8 +1,7 @@
 "use client";
 import { useState } from "react";
 import { ArrowUpFromLine } from "lucide-react";
-import { useAuth } from "@/components/auth/auth-context";
-import { useAccount } from "@/hooks/use-account";
+import { useWalletBalance } from "@/hooks/use-wallet-balance";
 import { useWithdraw } from "@/hooks/use-withdraw";
 import { Button } from "@/components/ui/button";
 import { Modal } from "@/components/ui/modal";
@@ -14,16 +13,14 @@ const SOL_GAS_RESERVE = 0.01;
 
 /** "Withdraw" button → modal to send SOL/USDC to an external Solana address. */
 export function WithdrawButton() {
-  const { authenticated } = useAuth();
-  const { account } = useAccount(authenticated);
+  const { solBalance, usdcBalance } = useWalletBalance();
   const { withdraw, pending, error } = useWithdraw();
   const [open, setOpen] = useState(false);
   const [asset, setAsset] = useState<Asset>("SOL");
   const [amount, setAmount] = useState("");
   const [destination, setDestination] = useState("");
 
-  const balance =
-    asset === "SOL" ? (account?.solBalance ?? 0) : (account?.usdcBalance ?? 0);
+  const balance = asset === "SOL" ? solBalance : usdcBalance;
   const max =
     asset === "SOL" ? Math.max(0, balance - SOL_GAS_RESERVE) : balance;
   const amt = Number(amount) || 0;
