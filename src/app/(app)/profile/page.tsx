@@ -5,7 +5,7 @@ import { useNetworth } from "@/hooks/use-profile-data";
 import { NetworthChart } from "@/components/profile/NetworthChart";
 import { ActivityHistory } from "@/components/profile/ActivityHistory";
 import { PositionsList } from "@/components/profile/PositionsList";
-import { DepositCard } from "@/components/profile/DepositCard";
+import { DepositButton } from "@/components/profile/DepositButton";
 import { EditableUsername } from "@/components/profile/EditableUsername";
 import { AvatarUploader } from "@/components/profile/AvatarUploader";
 import { ProfileSkeleton } from "@/components/profile/ProfileSkeleton";
@@ -46,12 +46,15 @@ export default function ProfilePage() {
   return (
     <div className="mx-auto max-w-5xl p-4 lg:p-6">
       {/* Header */}
-      <div className="mb-6 flex items-center gap-4">
-        <AvatarUploader />
-        <div>
-          <EditableUsername />
-          <p className="text-sm text-muted">Paper trading account</p>
+      <div className="mb-6 flex items-center justify-between gap-4">
+        <div className="flex items-center gap-4">
+          <AvatarUploader />
+          <div>
+            <EditableUsername />
+            <p className="text-sm text-muted">Paper trading account</p>
+          </div>
         </div>
+        <DepositButton />
       </div>
 
       {/* Net worth */}
@@ -75,19 +78,14 @@ export default function ProfilePage() {
         </div>
       </div>
 
-      {/* Two columns */}
-      <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
-        <div className="space-y-6">
-          <Section title="Holdings">
-            <PositionsList positions={positions} />
-          </Section>
-          <Section title="Activity">
-            <ActivityHistory />
-          </Section>
-        </div>
-        <div className="space-y-6">
-          <DepositCard />
-        </div>
+      {/* Holdings + Activity side by side */}
+      <div className="grid gap-6 lg:grid-cols-2">
+        <Section title="Holdings">
+          <PositionsList positions={positions} />
+        </Section>
+        <Section title="Activity">
+          <ActivityHistory />
+        </Section>
       </div>
     </div>
   );
