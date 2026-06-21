@@ -158,6 +158,7 @@ export const supabaseStore: TradingStore = {
       valueUsd: n(row.value_usd),
       marketCapUsd: row.market_cap == null ? null : n(row.market_cap),
       payAsset: (row.pay_asset as TradeRecord["payAsset"]) ?? null,
+      txSignature: (row.tx_signature as string) ?? null,
       createdAt: String(row.created_at),
     }));
   },

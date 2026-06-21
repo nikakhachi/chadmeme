@@ -50,6 +50,8 @@ export interface TradeRecord {
   marketCapUsd?: number | null;
   /** Base asset paid (buy) / received (sell). */
   payAsset?: "SOL" | "USDC" | null;
+  /** On-chain swap signature. */
+  txSignature?: string | null;
   createdAt: string;
 }
 

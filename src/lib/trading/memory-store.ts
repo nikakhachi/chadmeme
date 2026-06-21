@@ -156,7 +156,7 @@ export const memoryStore: TradingStore = {
     return trade;
   },
 
-  async logTrade({ userId, token, side, tokenAmount, priceUsd, valueUsd, marketCapUsd, payAsset }) {
+  async logTrade({ userId, token, side, tokenAmount, priceUsd, valueUsd, marketCapUsd, payAsset, txSignature }) {
     const state = ensure(userId);
     const trade: TradeRecord = {
       id: randomUUID(),
@@ -170,6 +170,7 @@ export const memoryStore: TradingStore = {
       valueUsd,
       marketCapUsd: marketCapUsd ?? null,
       payAsset,
+      txSignature,
       createdAt: new Date().toISOString(),
     };
     state.trades.unshift(trade);
