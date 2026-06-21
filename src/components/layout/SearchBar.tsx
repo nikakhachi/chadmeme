@@ -6,7 +6,7 @@ import { Search } from "lucide-react";
 import { useTrending } from "@/hooks/use-trending";
 import { TokenAvatar } from "@/components/ui/token-avatar";
 import { PriceChange } from "@/components/ui/price-change";
-import { formatCompactUsd } from "@/lib/utils";
+import { formatCompactUsd, formatTokenPrice, shortenAddress } from "@/lib/utils";
 import type { Token } from "@/types/market";
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
@@ -75,7 +75,7 @@ export function SearchBar() {
 
       {open && (
         <div
-          className="absolute left-0 right-0 top-full z-50 mt-2 overflow-hidden rounded-xl border border-line bg-panel shadow-xl"
+          className="absolute left-1/2 top-full z-50 mt-2 w-[640px] max-w-[92vw] -translate-x-1/2 overflow-hidden rounded-xl border border-line bg-panel shadow-xl"
           onMouseDown={() => blurTimer.current && clearTimeout(blurTimer.current)}
         >
           {waiting && results.length === 0 ? (
@@ -87,16 +87,25 @@ export function SearchBar() {
               <button
                 key={t.address}
                 onClick={() => go(t.address)}
-                className="flex w-full items-center gap-3 px-3 py-2.5 text-left hover:bg-elevated"
+                className="flex w-full items-center gap-2.5 px-3 py-2 text-left hover:bg-elevated"
               >
-                <TokenAvatar symbol={t.symbol} logoURI={t.logoURI} size="sm" />
+                <TokenAvatar symbol={t.symbol} logoURI={t.logoURI} />
                 <div className="min-w-0 flex-1">
-                  <div className="truncate text-sm font-semibold">{t.symbol}</div>
-                  <div className="truncate text-xs text-muted">{t.name}</div>
+                  <div className="truncate text-sm font-semibold text-foreground">{t.symbol}</div>
+                  <div className="flex items-center gap-1.5 text-xs text-muted">
+                    <span className="truncate">{t.name}</span>
+                    <span className="shrink-0 font-mono text-subtle">
+                      {shortenAddress(t.address, 4, 4)}
+                    </span>
+                  </div>
                 </div>
-                <div className="text-right text-xs">
-                  <div className="text-foreground">{formatCompactUsd(t.marketCap)}</div>
-                  <PriceChange value={t.priceChange24h} />
+                <div className="flex shrink-0 items-center gap-2 text-xs">
+                  <Stat label="MC" value={formatCompactUsd(t.marketCap)} />
+                  <span className="w-14 text-right text-foreground">
+                    {formatTokenPrice(t.priceUsd)}
+                  </span>
+                  <PriceChange value={t.priceChange24h} className="w-14 text-right" />
+                  <Stat label="VOL" value={formatCompactUsd(t.volume24h)} />
                 </div>
               </button>
             ))
@@ -104,5 +113,17 @@ export function SearchBar() {
         </div>
       )}
     </div>
+  );
+}
+
+/** Compact labeled stat (e.g. "MC $127K") used in search rows. */
+function Stat({ label, value }: { label: string; value: string }) {
+  return (
+    <span className="inline-flex items-center gap-1">
+      <span className="rounded bg-elevated px-1 py-px text-[10px] font-semibold text-subtle">
+        {label}
+      </span>
+      <span className="text-foreground">{value}</span>
+    </span>
   );
 }
