@@ -19,7 +19,7 @@ export function TokenSidebar() {
   const { addresses } = useWatchlist();
   const isWatchlist = tab === "Watchlist";
 
-  const trending = useTrending(50);
+  const trending = useTrending(20);
   const watchlist = useWatchlistTokens(isWatchlist ? addresses : []);
 
   const tokens = isWatchlist ? watchlist.tokens : trending.tokens;

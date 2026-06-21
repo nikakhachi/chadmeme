@@ -5,7 +5,7 @@ import type { Token } from "@/types/market";
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
 /** Client hook for the trending token list, refreshed periodically. */
-export function useTrending(limit = 50) {
+export function useTrending(limit = 20) {
   const { data, error, isLoading } = useSWR<{ tokens: Token[] }>(
     `/api/tokens/trending?limit=${limit}`,
     fetcher,

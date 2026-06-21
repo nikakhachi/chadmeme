@@ -14,7 +14,7 @@ import { formatCompactUsd } from "@/lib/utils";
  */
 export function SearchBar() {
   const router = useRouter();
-  const { tokens } = useTrending(50);
+  const { tokens } = useTrending(20);
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
   const blurTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
