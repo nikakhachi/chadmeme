@@ -78,8 +78,8 @@ export default function ProfilePage() {
         </div>
       </div>
 
-      {/* Holdings + Activity side by side */}
-      <div className="grid gap-6 lg:grid-cols-2">
+      {/* Holdings + Activity side by side (each sizes to its own content) */}
+      <div className="grid items-start gap-6 lg:grid-cols-2">
         <Section title="Holdings">
           <PositionsList positions={positions} />
         </Section>
