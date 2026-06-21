@@ -59,6 +59,49 @@ export async function getTrendingTokens(limit = 50): Promise<Token[]> {
   }
 }
 
+// ── Search ───────────────────────────────────────────────────────────────────
+
+/**
+ * Search all Solana tokens by name/symbol/address via BirdEye `/defi/v3/search`.
+ * Falls back to filtering the mock list when no key is configured.
+ */
+export async function searchTokens(query: string, limit = 12): Promise<Token[]> {
+  const q = query.trim();
+  if (!q) return [];
+  if (!features.hasBirdeye) {
+    const lower = q.toLowerCase();
+    return mockTrendingTokens(50)
+      .filter(
+        (t) =>
+          t.symbol.toLowerCase().includes(lower) ||
+          t.name.toLowerCase().includes(lower) ||
+          t.address.toLowerCase().includes(lower),
+      )
+      .slice(0, limit);
+  }
+  try {
+    const data = await birdeyeGet<{ items?: { type?: string; result?: Record<string, unknown>[] }[] }>(
+      "/defi/v3/search",
+      {
+        params: {
+          chain: "solana",
+          keyword: q,
+          target: "token",
+          sort_by: "volume_24h_usd",
+          sort_type: "desc",
+          offset: 0,
+          limit,
+        },
+        revalidateSeconds: 30,
+      },
+    );
+    const tokenGroup = (data.items ?? []).find((i) => i.type === "token");
+    return (tokenGroup?.result ?? []).map(mapToken);
+  } catch {
+    return [];
+  }
+}
+
 // ── Prices (for position valuation / PnL) ────────────────────────────────────
 
 /**
@@ -230,9 +273,11 @@ function mapToken(raw: Record<string, unknown>): Token {
     logoURI: pick<string>(raw, "logoURI", "logo_uri", "icon"),
     decimals: num(pick(raw, "decimals"), 6),
     priceUsd: num(pick(raw, "price")),
-    priceChange24h: num(pick(raw, "price24hChangePercent", "priceChange24hPercent")),
-    marketCap: num(pick(raw, "marketcap", "marketCap", "mc")),
-    volume24h: num(pick(raw, "volume24hUSD", "v24hUSD", "v24h")),
+    priceChange24h: num(
+      pick(raw, "price24hChangePercent", "priceChange24hPercent", "price_change_24h_percent"),
+    ),
+    marketCap: num(pick(raw, "marketcap", "marketCap", "mc", "market_cap")),
+    volume24h: num(pick(raw, "volume24hUSD", "v24hUSD", "v24h", "volume_24h_usd")),
     liquidity: num(pick(raw, "liquidity")),
     holders: num(pick(raw, "holder", "holders")),
   };
