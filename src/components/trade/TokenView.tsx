@@ -3,6 +3,7 @@ import { ChartPanel } from "@/components/chart/ChartPanel";
 import { ActivityTabs } from "./ActivityTabs";
 import { TradePanel } from "./TradePanel";
 import { AboutToken } from "./AboutToken";
+import { YourPositions } from "./YourPositions";
 import type { TokenDetail } from "@/types/market";
 
 /**
@@ -25,6 +26,7 @@ export function TokenView({ token }: { token: TokenDetail }) {
       <div className="w-full shrink-0 space-y-3 border-line p-3 lg:w-[340px] lg:border-l">
         <TradePanel token={token} />
         <AboutToken token={token} />
+        <YourPositions />
       </div>
     </div>
   );
