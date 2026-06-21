@@ -17,10 +17,6 @@ export function TokenHeader({ token }: { token: TokenDetail }) {
     { label: "24H Vol", value: formatCompactUsd(token.volume24h) },
     { label: "Liquidity", value: formatCompactUsd(token.liquidity) },
     { label: "Holders", value: token.holders.toLocaleString() },
-    {
-      label: "Top 10",
-      value: token.top10HoldersPercent ? `${token.top10HoldersPercent.toFixed(1)}%` : "—",
-    },
   ];
 
   return (
