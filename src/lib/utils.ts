@@ -41,6 +41,22 @@ export function formatTokenPrice(value: number): string {
   return `$${value.toPrecision(3).replace(/(\.\d*?)0+$/, "$1").replace(/\.$/, "")}`;
 }
 
+/**
+ * USD value for chart axes / crosshair. Groups thousands (1,000), compacts
+ * millions+ (1.30M, 42.5B, 1.2T), and keeps significant digits for sub-$1
+ * memecoin prices (0.00139).
+ */
+export function formatChartUsd(value: number): string {
+  if (!Number.isFinite(value)) return "$0";
+  const abs = Math.abs(value);
+  if (abs >= 1_000_000_000_000) return `$${(value / 1_000_000_000_000).toFixed(2)}T`;
+  if (abs >= 1_000_000_000) return `$${(value / 1_000_000_000).toFixed(2)}B`;
+  if (abs >= 1_000_000) return `$${(value / 1_000_000).toFixed(2)}M`;
+  if (abs >= 1) return `$${value.toLocaleString("en-US", { maximumFractionDigits: 2 })}`;
+  if (abs === 0) return "$0";
+  return `$${value.toLocaleString("en-US", { maximumSignificantDigits: 4 })}`;
+}
+
 /** Signed percentage: +442.81%, -25.42%. */
 export function formatPercent(value: number, digits = 2): string {
   if (!Number.isFinite(value)) return "0.00%";

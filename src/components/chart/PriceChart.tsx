@@ -10,6 +10,7 @@ import {
   type UTCTimestamp,
 } from "lightweight-charts";
 import type { Candle } from "@/types/market";
+import { formatChartUsd } from "@/lib/utils";
 
 export type ChartType = "candles" | "line";
 export type PriceMode = "price" | "mcap";
@@ -48,6 +49,8 @@ export function PriceChart({
         textColor: "#8b8f9a",
         fontFamily: "var(--font-sans)",
       },
+      // Group thousands + compact millions on the price axis & crosshair.
+      localization: { priceFormatter: formatChartUsd },
       grid: {
         vertLines: { color: "rgba(38,40,47,0.4)" },
         horzLines: { color: "rgba(38,40,47,0.4)" },
