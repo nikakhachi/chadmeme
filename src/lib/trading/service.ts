@@ -32,6 +32,7 @@ const EMPTY_SUMMARY: AccountSummary = {
   change24hPercent: 0,
   solBalance: 0,
   usdcBalance: 0,
+  solPriceUsd: 0,
 };
 
 export async function getAccountView(
@@ -108,6 +109,7 @@ export async function getAccountView(
       change24hPercent,
       solBalance,
       usdcBalance,
+      solPriceUsd: solPrice,
     },
     positions,
   };

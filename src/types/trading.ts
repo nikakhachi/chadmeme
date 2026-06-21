@@ -89,4 +89,6 @@ export interface AccountSummary {
   /** Native SOL balance (in SOL) and USDC balance (in USDC). */
   solBalance: number;
   usdcBalance: number;
+  /** Live SOL price in USD (for client-side trade estimates). */
+  solPriceUsd: number;
 }
