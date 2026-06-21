@@ -202,6 +202,8 @@ export interface RecordTradeInput {
   side: TradeSide;
   /** Memecoin amount bought (buy) or sold (sell), UI units. */
   tokenAmount: number;
+  /** Base-asset amount: spent on a buy, received on a sell. */
+  payAmount: number;
   payAsset: "SOL" | "USDC";
   marketCapUsd?: number | null;
   trader?: UserInfo;
@@ -217,8 +219,12 @@ export async function recordRealTrade(userId: string, input: RecordTradeInput) {
 
   const signature = await broadcastAndConfirm(input.signedTransaction);
 
-  const priceUsd = await getPrice(input.token.address);
-  const valueUsd = input.tokenAmount * priceUsd;
+  // valueUsd = the USD value of the base-asset leg (what was ACTUALLY paid on a
+  // buy / received on a sell) — the true cost basis, including price impact.
+  // The effective entry price is derived from that, not BirdEye's mid price.
+  const payPrice = input.payAsset === "USDC" ? 1 : await getPrice(MINTS.SOL);
+  const valueUsd = input.payAmount * payPrice;
+  const priceUsd = input.tokenAmount > 0 ? valueUsd / input.tokenAmount : 0;
 
   const trade = await store.logTrade({
     userId,

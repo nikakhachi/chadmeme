@@ -89,7 +89,10 @@ export function useExecuteTrade() {
       const signedBase64 = bytesToBase64(signedTransaction);
 
       // 3. Broadcast + record server-side.
+      // Buy: spend `amount` of pay-asset, receive `outAmount` tokens.
+      // Sell: sell `amount` tokens, receive `outAmount` of pay-asset.
       const tokenAmount = args.side === "buy" ? swap.outAmount : args.amount;
+      const payAmount = args.side === "buy" ? args.amount : swap.outAmount;
       const sendRes = await fetch("/api/trade/send", {
         method: "POST",
         headers: authHeaders,
@@ -102,6 +105,7 @@ export function useExecuteTrade() {
             logoURI: args.token.logoURI,
           },
           tokenAmount,
+          payAmount,
           payAsset: args.payAsset,
           marketCapUsd: args.token.marketCap ?? null,
           trader: { handle: user.handle, walletAddress },

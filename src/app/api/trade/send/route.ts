@@ -12,6 +12,7 @@ const bodySchema = z.object({
     logoURI: z.string().optional(),
   }),
   tokenAmount: z.number().positive(),
+  payAmount: z.number().positive(),
   payAsset: z.enum(["SOL", "USDC"]),
   marketCapUsd: z.number().nullable().optional(),
   trader: z
