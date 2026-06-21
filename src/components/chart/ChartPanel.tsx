@@ -9,7 +9,7 @@ const INTERVALS: ChartInterval[] = ["1m", "5m", "15m", "1H", "4H", "1D"];
 
 /** Chart with interval selector and live OHLCV polling. */
 export function ChartPanel({ address }: { address: string }) {
-  const [interval, setInterval] = useState<ChartInterval>("15m");
+  const [interval, setInterval] = useState<ChartInterval>("1m");
   const { candles, isLoading } = useOHLCV(address, interval);
 
   return (
