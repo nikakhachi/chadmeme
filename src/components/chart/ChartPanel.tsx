@@ -17,16 +17,16 @@ export function ChartPanel({ address, supply }: { address: string; supply: numbe
   const { candles, isLoading } = useOHLCV(address, interval);
 
   // Mark the signed-in user's own buys/sells for this token on the chart.
-  const { trades } = useActivity();
+  const { items } = useActivity();
   const markers = useMemo<TradeMarker[]>(
     () =>
-      trades
-        .filter((t) => t.tokenAddress === address)
-        .map((t) => ({
-          time: Math.floor(new Date(t.createdAt).getTime() / 1000),
-          side: t.side,
+      items
+        .filter((i) => i.type === "trade" && i.tokenAddress === address)
+        .map((i) => ({
+          time: Math.floor(new Date(i.createdAt).getTime() / 1000),
+          side: (i as { side: TradeMarker["side"] }).side,
         })),
-    [trades, address],
+    [items, address],
   );
 
   return (

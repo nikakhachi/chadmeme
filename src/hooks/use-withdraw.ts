@@ -67,7 +67,11 @@ export function useWithdraw() {
       const sendRes = await fetch("/api/withdraw/send", {
         method: "POST",
         headers,
-        body: JSON.stringify({ signedTransaction: bytesToBase64(signedTransaction) }),
+        body: JSON.stringify({
+          signedTransaction: bytesToBase64(signedTransaction),
+          asset: args.asset,
+          amount: args.amount,
+        }),
       });
       const sent = await sendRes.json();
       if (!sendRes.ok) {

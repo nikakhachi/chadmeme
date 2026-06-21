@@ -1,49 +1,89 @@
 "use client";
+import { ArrowDownToLine, ArrowUpFromLine } from "lucide-react";
 import { useActivity } from "@/hooks/use-profile-data";
 import { TokenAvatar } from "@/components/ui/token-avatar";
 import { AssetIcon } from "@/components/ui/asset-icon";
 import { cn, formatUsd, timeAgo } from "@/lib/utils";
+import type { ActivityItem } from "@/types/trading";
 
-/** The user's trade history (buys and sells). */
+/** Unified activity: swaps + deposits + withdrawals. */
 export function ActivityHistory() {
-  const { trades, isLoading } = useActivity();
+  const { items, isLoading } = useActivity();
 
-  if (isLoading && trades.length === 0) {
+  if (isLoading && items.length === 0) {
     return <p className="p-4 text-sm text-muted">Loading activity…</p>;
   }
-  if (trades.length === 0) {
-    return <p className="p-4 text-sm text-muted">No trades yet. Buy a token to get started.</p>;
+  if (items.length === 0) {
+    return <p className="p-4 text-sm text-muted">No activity yet.</p>;
   }
 
   return (
     <ul className="divide-y divide-line">
-      {trades.map((t) => (
-        <li key={t.id} className="flex items-center gap-3 px-4 py-3">
-          <TokenAvatar symbol={t.tokenSymbol} size="sm" />
-          <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-1.5 text-sm font-semibold">
-              <span className={cn("capitalize", t.side === "buy" ? "text-up" : "text-down")}>
-                {t.side}
-              </span>
-              {t.tokenSymbol}
-              {t.payAsset && (
-                <span className="flex items-center gap-1 text-xs font-normal text-muted">
-                  {t.side === "buy" ? "with" : "for"}
-                  <AssetIcon asset={t.payAsset} className="size-3.5" />
-                  {t.payAsset}
-                </span>
-              )}
-            </div>
-            <div className="text-xs text-muted">{timeAgo(new Date(t.createdAt))} ago</div>
-          </div>
-          <div className="text-right">
-            <div className="text-sm font-semibold">{formatUsd(t.valueUsd)}</div>
-            <div className="text-xs text-muted">
-              {t.tokenAmount.toLocaleString(undefined, { maximumFractionDigits: 0 })} {t.tokenSymbol}
-            </div>
-          </div>
+      {items.map((item) => (
+        <li key={item.id} className="flex items-center gap-3 px-4 py-3">
+          {item.type === "trade" ? <TradeRow item={item} /> : <TransferRow item={item} />}
         </li>
       ))}
     </ul>
+  );
+}
+
+function TradeRow({ item }: { item: Extract<ActivityItem, { type: "trade" }> }) {
+  return (
+    <>
+      <TokenAvatar symbol={item.tokenSymbol} size="sm" />
+      <div className="min-w-0 flex-1">
+        <div className="flex items-center gap-1.5 text-sm font-semibold">
+          <span className={cn("capitalize", item.side === "buy" ? "text-up" : "text-down")}>
+            {item.side}
+          </span>
+          {item.tokenSymbol}
+          {item.payAsset && (
+            <span className="flex items-center gap-1 text-xs font-normal text-muted">
+              {item.side === "buy" ? "with" : "for"}
+              <AssetIcon asset={item.payAsset} className="size-3.5" />
+              {item.payAsset}
+            </span>
+          )}
+        </div>
+        <div className="text-xs text-muted">{timeAgo(new Date(item.createdAt))} ago</div>
+      </div>
+      <div className="text-right">
+        <div className="text-sm font-semibold">{formatUsd(item.valueUsd)}</div>
+        <div className="text-xs text-muted">
+          {item.tokenAmount.toLocaleString(undefined, { maximumFractionDigits: 0 })}{" "}
+          {item.tokenSymbol}
+        </div>
+      </div>
+    </>
+  );
+}
+
+function TransferRow({ item }: { item: Extract<ActivityItem, { type: "deposit" | "withdraw" }> }) {
+  const isDeposit = item.type === "deposit";
+  return (
+    <>
+      <span
+        className={cn(
+          "grid size-7 place-items-center rounded-full",
+          isDeposit ? "bg-up/15 text-up" : "bg-down/15 text-down",
+        )}
+      >
+        {isDeposit ? <ArrowDownToLine className="size-4" /> : <ArrowUpFromLine className="size-4" />}
+      </span>
+      <div className="min-w-0 flex-1">
+        <div className="flex items-center gap-1.5 text-sm font-semibold capitalize">
+          {item.type}
+          <AssetIcon asset={item.asset} className="size-3.5" />
+          {item.asset}
+        </div>
+        <div className="text-xs text-muted">{timeAgo(new Date(item.createdAt))} ago</div>
+      </div>
+      <div className={cn("text-right text-sm font-semibold", isDeposit ? "text-up" : "text-down")}>
+        {isDeposit ? "+" : "−"}
+        {item.amount.toLocaleString(undefined, { maximumFractionDigits: item.asset === "SOL" ? 4 : 2 })}{" "}
+        {item.asset}
+      </div>
+    </>
   );
 }

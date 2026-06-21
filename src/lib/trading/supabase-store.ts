@@ -1,6 +1,12 @@
 import "server-only";
 import { getSupabaseAdmin } from "@/lib/supabase/admin";
-import type { FeedActivity, NetworthPoint, Position, TradeRecord } from "@/types/trading";
+import type {
+  FeedActivity,
+  NetworthPoint,
+  Position,
+  TradeRecord,
+  TransferRecord,
+} from "@/types/trading";
 import { applyTrade, STARTING_CASH_USD } from "./engine";
 import type { TradingStore } from "./store";
 
@@ -257,6 +263,37 @@ export const supabaseStore: TradingStore = {
       marketCapUsd: marketCapUsd ?? null,
       createdAt: String(data.created_at),
     };
+  },
+
+  async logTransfer({ userId, kind, asset, amount, txSignature }) {
+    const db = getSupabaseAdmin();
+    await db.from("transfers").insert({
+      user_id: userId,
+      kind,
+      asset,
+      amount,
+      tx_signature: txSignature,
+    });
+  },
+
+  async getTransfers(userId, limit = 50) {
+    const db = getSupabaseAdmin();
+    const { data } = await db
+      .from("transfers")
+      .select("*")
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false })
+      .limit(limit);
+    return (data ?? []).map(
+      (row): TransferRecord => ({
+        id: String(row.id),
+        kind: row.kind as TransferRecord["kind"],
+        asset: row.asset as TransferRecord["asset"],
+        amount: n(row.amount),
+        txSignature: (row.tx_signature as string) ?? null,
+        createdAt: String(row.created_at),
+      }),
+    );
   },
 
   async snapshotNetworth(userId, valueUsd) {

@@ -3,8 +3,10 @@ import { getPrice, getTokensByAddresses } from "@/lib/birdeye";
 import { getSolBalance, getTokenBalances } from "@/lib/solana/balances";
 import { MINTS } from "@/lib/solana/connection";
 import { broadcastAndConfirm } from "@/lib/solana/send";
+import { getDeposits } from "@/lib/solana/history";
 import type {
   AccountSummary,
+  ActivityItem,
   FeedActivity,
   NetworthPoint,
   PositionWithPnl,
@@ -239,8 +241,39 @@ export async function recordRealTrade(userId: string, input: RecordTradeInput) {
   return { signature, trade };
 }
 
-export async function getActivity(userId: string, limit = 50): Promise<TradeRecord[]> {
-  return getStore().getTrades(userId, limit);
+/**
+ * Unified activity for the profile tab: the user's swaps + their withdrawals
+ * (recorded) + detected on-chain deposits, newest first. (The feed stays
+ * swaps-only.)
+ */
+export async function getActivity(
+  userId: string,
+  walletAddress: string | null,
+  limit = 50,
+): Promise<ActivityItem[]> {
+  const store = getStore();
+  const [trades, transfers, deposits] = await Promise.all([
+    store.getTrades(userId, limit),
+    store.getTransfers(userId, limit),
+    walletAddress ? getDeposits(walletAddress) : Promise.resolve([]),
+  ]);
+
+  const items: ActivityItem[] = [
+    ...trades.map((t) => ({ type: "trade" as const, ...t })),
+    ...transfers.map((tr) => ({ type: tr.kind, ...tr })),
+    ...deposits.map((d) => ({ type: "deposit" as const, ...d })),
+  ];
+  items.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  return items.slice(0, limit);
+}
+
+/** Record a completed withdrawal so it appears in the activity tab. */
+export async function recordWithdrawal(
+  userId: string,
+  args: { asset: "SOL" | "USDC"; amount: number; txSignature: string },
+): Promise<void> {
+  await getStore().ensureUser(userId);
+  await getStore().logTransfer({ userId, kind: "withdraw", ...args });
 }
 
 /** Global activity feed: recent trades across all users, paginated. */

@@ -174,6 +174,14 @@ export const memoryStore: TradingStore = {
     return trade;
   },
 
+  async logTransfer() {
+    // Transfers are only meaningful with the durable (Supabase) store.
+  },
+
+  async getTransfers() {
+    return [];
+  },
+
   async snapshotNetworth(userId, valueUsd) {
     const state = ensure(userId);
     state.networth.push({
