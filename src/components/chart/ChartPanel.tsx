@@ -82,6 +82,7 @@ export function ChartPanel({ address, supply }: { address: string; supply: numbe
           priceMode={priceMode}
           supply={supply}
           markers={markers}
+          resetKey={`${address}:${interval}`}
         />
       </div>
     </div>

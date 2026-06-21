@@ -38,6 +38,7 @@ export function PriceChart({
   priceMode,
   supply,
   markers = [],
+  resetKey,
 }: {
   candles: Candle[];
   chartType: ChartType;
@@ -45,12 +46,16 @@ export function PriceChart({
   supply: number;
   /** The current user's buy/sell trades for this token. */
   markers?: TradeMarker[];
+  /** Changes when the token/interval changes; only then do we re-fit the view
+   *  (so live price updates don't reset the user's zoom/pan). */
+  resetKey: string;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<IChartApi | null>(null);
   const priceSeriesRef = useRef<ISeriesApi<"Candlestick"> | ISeriesApi<"Line"> | null>(null);
   const volumeSeriesRef = useRef<ISeriesApi<"Histogram"> | null>(null);
   const markersRef = useRef<ISeriesMarkersPluginApi<Time> | null>(null);
+  const fittedKeyRef = useRef<string | null>(null);
 
   // Create the chart + volume series once.
   useEffect(() => {
@@ -160,8 +165,14 @@ export function PriceChart({
         color: c.close >= c.open ? "rgba(22,199,132,0.4)" : "rgba(234,75,90,0.4)",
       })),
     );
-    chartRef.current?.timeScale().fitContent();
-  }, [candles, chartType, priceMode, supply]);
+
+    // Only fit the view the first time we see this token/interval — live price
+    // updates must not reset the user's manual zoom/pan.
+    if (fittedKeyRef.current !== resetKey) {
+      chartRef.current?.timeScale().fitContent();
+      fittedKeyRef.current = resetKey;
+    }
+  }, [candles, chartType, priceMode, supply, resetKey]);
 
   return <div ref={containerRef} className="h-full w-full" />;
 }
