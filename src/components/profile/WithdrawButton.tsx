@@ -9,7 +9,7 @@ import { AssetIcon } from "@/components/ui/asset-icon";
 import { cn } from "@/lib/utils";
 
 type Asset = "SOL" | "USDC";
-const SOL_GAS_RESERVE = 0.005;
+const SOL_GAS_RESERVE = 0.01;
 
 /** "Withdraw" button → modal to send SOL/USDC to an external Solana address. */
 export function WithdrawButton() {
@@ -28,7 +28,11 @@ export function WithdrawButton() {
     !pending && amt > 0 && amt <= balance && destination.trim().length >= 32;
 
   async function submit() {
-    const sig = await withdraw({ asset, amount: amt, destination: destination.trim() });
+    const sig = await withdraw({
+      asset,
+      amount: amt,
+      destination: destination.trim(),
+    });
     if (sig) {
       setAmount("");
       setDestination("");
@@ -45,66 +49,66 @@ export function WithdrawButton() {
 
       <Modal open={open} onClose={() => setOpen(false)} title="Withdraw crypto">
         <div className="space-y-3">
-            <div className="flex gap-0.5 rounded-lg bg-canvas p-0.5">
-              {(["SOL", "USDC"] as Asset[]).map((a) => (
-                <button
-                  key={a}
-                  onClick={() => setAsset(a)}
-                  className={cn(
-                    "flex flex-1 items-center justify-center gap-1.5 rounded-md py-1.5 text-sm font-semibold transition-colors",
-                    asset === a
-                      ? "bg-elevated text-foreground"
-                      : "text-muted hover:text-foreground",
-                  )}
-                >
-                  <AssetIcon asset={a} className="size-4" />
-                  {a}
-                </button>
-              ))}
-            </div>
+          <div className="flex gap-0.5 rounded-lg bg-canvas p-0.5">
+            {(["SOL", "USDC"] as Asset[]).map((a) => (
+              <button
+                key={a}
+                onClick={() => setAsset(a)}
+                className={cn(
+                  "flex flex-1 items-center justify-center gap-1.5 rounded-md py-1.5 text-sm font-semibold transition-colors",
+                  asset === a
+                    ? "bg-elevated text-foreground"
+                    : "text-muted hover:text-foreground",
+                )}
+              >
+                <AssetIcon asset={a} className="size-4" />
+                {a}
+              </button>
+            ))}
+          </div>
 
-            <div>
-              <div className="mb-1 flex justify-between text-xs text-muted">
-                <span>Amount</span>
-                <button
-                  onClick={() => setAmount(String(Number(max.toFixed(6))))}
-                  className="hover:text-foreground"
-                >
-                  Max {max.toFixed(asset === "SOL" ? 4 : 2)} {asset}
-                </button>
-              </div>
-              <input
-                inputMode="decimal"
-                value={amount}
-                onChange={(e) =>
-                  setAmount(e.target.value.replace(/[^0-9.]/g, ""))
-                }
-                placeholder="0"
-                className="w-full rounded-lg border border-line bg-canvas px-3 py-2.5 text-lg font-semibold focus:border-brand focus:outline-none"
-              />
+          <div>
+            <div className="mb-1 flex justify-between text-xs text-muted">
+              <span>Amount</span>
+              <button
+                onClick={() => setAmount(String(Number(max.toFixed(6))))}
+                className="hover:text-foreground"
+              >
+                Max {max.toFixed(asset === "SOL" ? 4 : 2)} {asset}
+              </button>
             </div>
+            <input
+              inputMode="decimal"
+              value={amount}
+              onChange={(e) =>
+                setAmount(e.target.value.replace(/[^0-9.]/g, ""))
+              }
+              placeholder="0"
+              className="w-full rounded-lg border border-line bg-canvas px-3 py-2.5 text-lg font-semibold focus:border-brand focus:outline-none"
+            />
+          </div>
 
-            <div>
-              <label className="mb-1 block text-xs text-muted">
-                Destination (Solana address)
-              </label>
-              <input
-                value={destination}
-                onChange={(e) => setDestination(e.target.value.trim())}
-                placeholder="Recipient address"
-                className="w-full rounded-lg border border-line bg-canvas px-3 py-2.5 font-mono text-sm focus:border-brand focus:outline-none"
-              />
-            </div>
+          <div>
+            <label className="mb-1 block text-xs text-muted">
+              Destination (Solana address)
+            </label>
+            <input
+              value={destination}
+              onChange={(e) => setDestination(e.target.value.trim())}
+              placeholder="Recipient address"
+              className="w-full rounded-lg border border-line bg-canvas px-3 py-2.5 font-mono text-sm focus:border-brand focus:outline-none"
+            />
+          </div>
 
-            <Button
-              onClick={submit}
-              disabled={!canSubmit}
-              className="w-full"
-              size="lg"
-            >
-              {pending ? "Sending…" : `Withdraw ${asset}`}
-            </Button>
-            {error && <p className="text-center text-xs text-down">{error}</p>}
+          <Button
+            onClick={submit}
+            disabled={!canSubmit}
+            className="w-full"
+            size="lg"
+          >
+            {pending ? "Sending…" : `Withdraw ${asset}`}
+          </Button>
+          {error && <p className="text-center text-xs text-down">{error}</p>}
         </div>
       </Modal>
     </>

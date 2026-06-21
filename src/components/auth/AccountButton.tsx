@@ -5,7 +5,7 @@ import { User, LogOut, ChevronDown } from "lucide-react";
 import { useAuth } from "./auth-context";
 import { Button } from "@/components/ui/button";
 import { TokenAvatar } from "@/components/ui/token-avatar";
-import { BalancePills } from "@/components/ui/balance-pills";
+import { NetWorthNav } from "@/components/layout/NetWorthNav";
 import { useProfile } from "@/hooks/use-profile";
 
 /** Top-bar account control: log in, or balance + menu when authenticated. */
@@ -28,7 +28,7 @@ export function AccountButton() {
 
   return (
     <div className="relative flex items-center gap-3">
-      <BalancePills className="hidden sm:flex" />
+      <NetWorthNav />
       <button
         onClick={() => setMenuOpen((o) => !o)}
         onBlur={() => setTimeout(() => setMenuOpen(false), 150)}

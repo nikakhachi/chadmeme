@@ -2,6 +2,7 @@
 import { useMemo, useState } from "react";
 import { CandlestickChart, LineChart } from "lucide-react";
 import { PriceChart, type ChartType, type PriceMode, type TradeMarker } from "./PriceChart";
+import { Spinner } from "@/components/ui/spinner";
 import { useOHLCV } from "@/hooks/use-token-data";
 import { useActivity } from "@/hooks/use-profile-data";
 import { cn } from "@/lib/utils";
@@ -71,9 +72,13 @@ export function ChartPanel({ address, supply }: { address: string; supply: numbe
       </div>
 
       <div className="relative min-h-0 flex-1">
-        {isLoading && candles.length === 0 && (
-          <div className="absolute inset-0 grid place-items-center text-sm text-muted">
-            Loading chart…
+        {candles.length === 0 && (
+          <div className="absolute inset-0 z-10 grid place-items-center">
+            {isLoading ? (
+              <Spinner className="size-7" />
+            ) : (
+              <span className="text-sm text-muted">No chart data available.</span>
+            )}
           </div>
         )}
         <PriceChart

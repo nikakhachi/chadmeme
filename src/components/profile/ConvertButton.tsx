@@ -10,7 +10,7 @@ import { Modal } from "@/components/ui/modal";
 import { AssetIcon } from "@/components/ui/asset-icon";
 
 type Asset = "SOL" | "USDC";
-const SOL_GAS_RESERVE = 0.005;
+const SOL_GAS_RESERVE = 0.01;
 
 /** Convert (swap) SOL ⇄ USDC inside the user's own wallet. */
 export function ConvertButton() {
@@ -27,7 +27,8 @@ export function ConvertButton() {
   const balance = from === "SOL" ? solBalance : usdcBalance;
   const max = from === "SOL" ? Math.max(0, balance - SOL_GAS_RESERVE) : balance;
   const amt = Number(amount) || 0;
-  const estOut = from === "SOL" ? amt * solPrice : solPrice > 0 ? amt / solPrice : 0;
+  const estOut =
+    from === "SOL" ? amt * solPrice : solPrice > 0 ? amt / solPrice : 0;
   const canSubmit = !pending && amt > 0 && amt <= balance;
 
   function flip() {
@@ -50,13 +51,20 @@ export function ConvertButton() {
         Convert
       </Button>
 
-      <Modal open={open} onClose={() => setOpen(false)} title="Convert SOL ⇄ USDC">
+      <Modal
+        open={open}
+        onClose={() => setOpen(false)}
+        title="Convert SOL ⇄ USDC"
+      >
         <div className="space-y-3">
           {/* From */}
           <div className="rounded-lg border border-line bg-canvas p-3">
             <div className="mb-1 flex items-center justify-between text-xs text-muted">
               <span>From</span>
-              <button onClick={() => setAmount(String(Number(max.toFixed(6))))} className="hover:text-foreground">
+              <button
+                onClick={() => setAmount(String(Number(max.toFixed(6))))}
+                className="hover:text-foreground"
+              >
                 Max {max.toFixed(from === "SOL" ? 4 : 2)}
               </button>
             </div>
@@ -67,7 +75,9 @@ export function ConvertButton() {
               <input
                 inputMode="decimal"
                 value={amount}
-                onChange={(e) => setAmount(e.target.value.replace(/[^0-9.]/g, ""))}
+                onChange={(e) =>
+                  setAmount(e.target.value.replace(/[^0-9.]/g, ""))
+                }
                 placeholder="0"
                 className="w-full bg-transparent text-right text-lg font-semibold focus:outline-none"
               />
@@ -92,12 +102,20 @@ export function ConvertButton() {
                 <AssetIcon asset={to} className="size-4" /> {to}
               </span>
               <span className="text-lg font-semibold text-foreground">
-                ≈ {estOut.toLocaleString("en-US", { maximumFractionDigits: to === "SOL" ? 4 : 2 })}
+                ≈{" "}
+                {estOut.toLocaleString("en-US", {
+                  maximumFractionDigits: to === "SOL" ? 4 : 2,
+                })}
               </span>
             </div>
           </div>
 
-          <Button onClick={submit} disabled={!canSubmit} className="w-full" size="lg">
+          <Button
+            onClick={submit}
+            disabled={!canSubmit}
+            className="w-full"
+            size="lg"
+          >
             {pending ? "Converting…" : `Convert to ${to}`}
           </Button>
           {error && <p className="text-center text-xs text-down">{error}</p>}
