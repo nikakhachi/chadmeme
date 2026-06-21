@@ -186,7 +186,7 @@ export async function getOHLCV(
       },
       revalidateSeconds: 15,
     });
-    return (data.items ?? []).map(
+    const candles = (data.items ?? []).map(
       (it): Candle => ({
         time: num(pick(it, "unixTime", "time")),
         open: num(pick(it, "o", "open")),
@@ -196,9 +196,30 @@ export async function getOHLCV(
         volume: num(pick(it, "v", "volume")),
       }),
     );
+    return fillCandleGaps(candles, INTERVAL_SECONDS[interval]);
   } catch {
     return [];
   }
+}
+
+/**
+ * Forward-fill missing intervals with flat candles (memecoins often have no
+ * trades in a given minute), so the chart is continuous when zoomed out.
+ */
+function fillCandleGaps(candles: Candle[], step: number): Candle[] {
+  if (candles.length < 2) return candles;
+  const sorted = [...candles].sort((a, b) => a.time - b.time);
+  const out: Candle[] = [];
+  for (let i = 0; i < sorted.length; i++) {
+    out.push(sorted[i]);
+    const next = sorted[i + 1];
+    if (!next) break;
+    const close = sorted[i].close;
+    for (let t = sorted[i].time + step; t < next.time; t += step) {
+      out.push({ time: t, open: close, high: close, low: close, close, volume: 0 });
+    }
+  }
+  return out;
 }
 
 // ── Live trades ──────────────────────────────────────────────────────────────

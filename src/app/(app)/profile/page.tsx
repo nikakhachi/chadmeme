@@ -7,6 +7,7 @@ import { ActivityHistory } from "@/components/profile/ActivityHistory";
 import { PositionsList } from "@/components/profile/PositionsList";
 import { DepositButton } from "@/components/profile/DepositButton";
 import { WithdrawButton } from "@/components/profile/WithdrawButton";
+import { ConvertButton } from "@/components/profile/ConvertButton";
 import { EditableUsername } from "@/components/profile/EditableUsername";
 import { AvatarUploader } from "@/components/profile/AvatarUploader";
 import { ProfileSkeleton } from "@/components/profile/ProfileSkeleton";
@@ -55,9 +56,10 @@ export default function ProfilePage() {
             <p className="text-sm text-muted">Paper trading account</p>
           </div>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <DepositButton />
           <WithdrawButton />
+          <ConvertButton />
         </div>
       </div>
 

@@ -1,0 +1,51 @@
+import { NextResponse } from "next/server";
+import { z } from "zod";
+import { getUserId } from "@/lib/auth/identify";
+import { MINTS } from "@/lib/solana/connection";
+import {
+  buildSwapTransaction,
+  fromBaseUnits,
+  getQuote,
+  toBaseUnits,
+} from "@/lib/solana/jupiter";
+
+const ASSET = {
+  SOL: { mint: MINTS.SOL, decimals: 9 },
+  USDC: { mint: MINTS.USDC, decimals: 6 },
+} as const;
+
+const bodySchema = z.object({
+  from: z.enum(["SOL", "USDC"]),
+  amount: z.number().positive(),
+  userPublicKey: z.string().min(32),
+});
+
+/** POST /api/convert/build — build an unsigned SOL⇄USDC swap (internal wallet). */
+export async function POST(request: Request) {
+  const userId = getUserId(request);
+  if (!userId) return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+
+  const parsed = bodySchema.safeParse(await request.json());
+  if (!parsed.success) {
+    return NextResponse.json({ error: "Invalid request" }, { status: 400 });
+  }
+  const { from, amount, userPublicKey } = parsed.data;
+  const input = ASSET[from];
+  const output = ASSET[from === "SOL" ? "USDC" : "SOL"];
+
+  try {
+    const quote = await getQuote({
+      inputMint: input.mint,
+      outputMint: output.mint,
+      amount: toBaseUnits(amount, input.decimals),
+    });
+    const swapTransaction = await buildSwapTransaction({ quote, userPublicKey });
+    return NextResponse.json({
+      swapTransaction,
+      outAmount: fromBaseUnits(quote.outAmount, output.decimals),
+    });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Conversion build failed";
+    return NextResponse.json({ error: message }, { status: 502 });
+  }
+}
