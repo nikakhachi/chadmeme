@@ -1,9 +1,10 @@
 "use client";
 import { useTokenTrades } from "@/hooks/use-token-data";
-import { cn, formatUsd, shortenAddress, timeAgo } from "@/lib/utils";
+import { CopyAddress } from "@/components/ui/copy-address";
+import { cn, formatCompactUsd, formatTokenPrice, formatUsd, timeAgo } from "@/lib/utils";
 
-/** Live swaps feed for a token, polled in real time. */
-export function TradesFeed({ address }: { address: string }) {
+/** Live swaps feed for a token: trader, side, price + market cap at the trade. */
+export function TradesFeed({ address, supply }: { address: string; supply?: number }) {
   const { trades, isLoading } = useTokenTrades(address);
 
   if (isLoading && trades.length === 0) {
@@ -17,6 +18,8 @@ export function TradesFeed({ address }: { address: string }) {
           <tr className="border-b border-line">
             <th className="px-3 py-2 text-left font-medium">Trader</th>
             <th className="px-3 py-2 text-left font-medium">Type</th>
+            <th className="px-3 py-2 text-right font-medium">Price</th>
+            <th className="px-3 py-2 text-right font-medium">MC</th>
             <th className="px-3 py-2 text-right font-medium">Value</th>
             <th className="px-3 py-2 text-right font-medium">Age</th>
           </tr>
@@ -24,13 +27,17 @@ export function TradesFeed({ address }: { address: string }) {
         <tbody>
           {trades.map((t, index) => (
             <tr key={index} className="border-b border-line/50">
-              <td className="px-3 py-2 font-mono text-xs text-foreground">
-                {shortenAddress(t.traderAddress)}
+              <td className="px-3 py-2 text-xs text-foreground">
+                <CopyAddress address={t.traderAddress} />
               </td>
               <td className="px-3 py-2">
                 <span className={cn("font-semibold capitalize", t.side === "buy" ? "text-up" : "text-down")}>
                   {t.side}
                 </span>
+              </td>
+              <td className="px-3 py-2 text-right text-muted">{formatTokenPrice(t.priceUsd)}</td>
+              <td className="px-3 py-2 text-right text-muted">
+                {supply && supply > 0 ? formatCompactUsd(t.priceUsd * supply) : "—"}
               </td>
               <td className="px-3 py-2 text-right">{formatUsd(t.valueUsd)}</td>
               <td className="px-3 py-2 text-right text-muted">{timeAgo(t.timestamp)}</td>

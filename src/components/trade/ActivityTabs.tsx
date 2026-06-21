@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 type Tab = "swaps" | "holders";
 
 /** Tabbed panel under the chart: live swaps and holders. */
-export function ActivityTabs({ address }: { address: string }) {
+export function ActivityTabs({ address, supply }: { address: string; supply?: number }) {
   const [tab, setTab] = useState<Tab>("swaps");
 
   return (
@@ -28,7 +28,11 @@ export function ActivityTabs({ address }: { address: string }) {
           </button>
         ))}
       </div>
-      {tab === "swaps" ? <TradesFeed address={address} /> : <HoldersTable address={address} />}
+      {tab === "swaps" ? (
+        <TradesFeed address={address} supply={supply} />
+      ) : (
+        <HoldersTable address={address} />
+      )}
     </div>
   );
 }

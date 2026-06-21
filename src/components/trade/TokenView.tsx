@@ -22,7 +22,7 @@ export function TokenView({ token }: { token: TokenDetail }) {
             supply={token.supply ?? (token.priceUsd > 0 ? token.marketCap / token.priceUsd : 0)}
           />
         </div>
-        <ActivityTabs address={token.address} />
+        <ActivityTabs address={token.address} supply={token.supply} />
       </div>
 
       {/* Right rail: trade + about */}
