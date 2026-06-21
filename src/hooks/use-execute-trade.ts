@@ -58,7 +58,7 @@ export function useExecuteTrade() {
     setError(null);
     const authHeaders = { "content-type": "application/json", "x-cw-user": user.id };
     try {
-      // 0. Top up gas (relayer) if the user is low on SOL.
+      // 0. Relayer funds the gas for this trade so the user pays 0 fees.
       await ensureGas(user.id, walletAddress);
 
       // 1. Build the unsigned swap transaction.
