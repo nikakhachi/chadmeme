@@ -5,7 +5,6 @@ import { toast } from "sonner";
 import { useSignTransaction, useWallets } from "@privy-io/react-auth/solana";
 import { useAuth } from "@/components/auth/auth-context";
 import { toastTx } from "@/lib/toast-tx";
-import { ensureGas } from "@/lib/gas-client";
 
 function base64ToBytes(b64: string): Uint8Array {
   const bin = atob(b64);
@@ -44,7 +43,6 @@ export function useWithdraw() {
     setError(null);
     const headers = { "content-type": "application/json", "x-cw-user": user.id };
     try {
-      await ensureGas(user.id, walletAddress);
       const buildRes = await fetch("/api/withdraw/build", {
         method: "POST",
         headers,

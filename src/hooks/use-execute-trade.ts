@@ -5,7 +5,6 @@ import { toast } from "sonner";
 import { useSignTransaction, useWallets } from "@privy-io/react-auth/solana";
 import { useAuth } from "@/components/auth/auth-context";
 import { toastTx } from "@/lib/toast-tx";
-import { ensureGas } from "@/lib/gas-client";
 import type { TradeSide } from "@/types/market";
 
 export interface ExecuteTradeArgs {
@@ -58,10 +57,7 @@ export function useExecuteTrade() {
     setError(null);
     const authHeaders = { "content-type": "application/json", "x-cw-user": user.id };
     try {
-      // 0. Relayer funds the gas for this trade so the user pays 0 fees.
-      await ensureGas(user.id, walletAddress);
-
-      // 1. Build the unsigned swap transaction.
+      // 1. Build the unsigned swap transaction (the server sponsors gas here).
       const swapRes = await fetch("/api/trade/swap", {
         method: "POST",
         headers: authHeaders,

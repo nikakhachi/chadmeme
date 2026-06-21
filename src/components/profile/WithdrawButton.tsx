@@ -7,9 +7,9 @@ import { Button } from "@/components/ui/button";
 import { Modal } from "@/components/ui/modal";
 import { AssetIcon } from "@/components/ui/asset-icon";
 import { cn } from "@/lib/utils";
+import { SOL_WITHDRAW_RESERVE } from "@/lib/sol-reserve";
 
 type Asset = "SOL" | "USDC";
-const SOL_GAS_RESERVE = 0.01;
 
 /** "Withdraw" button → modal to send SOL/USDC to an external Solana address. */
 export function WithdrawButton() {
@@ -22,7 +22,7 @@ export function WithdrawButton() {
 
   const balance = asset === "SOL" ? solBalance : usdcBalance;
   const max =
-    asset === "SOL" ? Math.max(0, balance - SOL_GAS_RESERVE) : balance;
+    asset === "SOL" ? Math.max(0, balance - SOL_WITHDRAW_RESERVE) : balance;
   const amt = Number(amount) || 0;
   const canSubmit =
     !pending && amt > 0 && amt <= balance && destination.trim().length >= 32;

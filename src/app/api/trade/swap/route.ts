@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getUserId } from "@/lib/auth/identify";
 import { MINTS } from "@/lib/solana/connection";
+import { sponsorGasForTx, userMissingAta } from "@/lib/solana/relayer";
 import {
   buildSwapTransaction,
   fromBaseUnits,
@@ -50,6 +51,28 @@ export async function POST(request: Request) {
       amount: toBaseUnits(amount, input.decimals),
     });
     const swapTransaction = await buildSwapTransaction({ quote, userPublicKey });
+
+    // Relayer sponsors the exact gas this swap needs, so the user pays 0 fees.
+    // SOL is wrapped/unwrapped whenever it's the pay asset; a buy may open the
+    // token's account, a sell-to-USDC may open the USDC account. Best-effort: a
+    // relayer hiccup shouldn't block the trade — the swap will surface any
+    // genuine shortfall when broadcast.
+    try {
+      const newAtaCount =
+        side === "buy"
+          ? (await userMissingAta(userPublicKey, tokenMint)) ? 1 : 0
+          : payAsset === "USDC" && (await userMissingAta(userPublicKey, MINTS.USDC))
+            ? 1
+            : 0;
+      await sponsorGasForTx(userPublicKey, {
+        txBase64: swapTransaction,
+        spendLamports: side === "buy" && payAsset === "SOL" ? Number(toBaseUnits(amount, 9)) : 0,
+        wrapsSol: payAsset === "SOL",
+        newAtaCount,
+      });
+    } catch {
+      // ignore — see comment above.
+    }
 
     return NextResponse.json({
       swapTransaction,

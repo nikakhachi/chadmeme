@@ -6,13 +6,16 @@ import {
   SystemProgram,
   TransactionMessage,
   VersionedTransaction,
-  LAMPORTS_PER_SOL,
 } from "@solana/web3.js";
+import { getAssociatedTokenAddress } from "@solana/spl-token";
 import { serverEnv, features } from "@/lib/env";
 import { getConnection } from "./connection";
+import { getSolBalance } from "./balances";
 
-/** SOL the relayer sends to cover the network fee + account rent for one action. */
-export const GAS_BUFFER_SOL = 0.01;
+/** Tiny safety margin added on top of the precise requirement (0.00001 SOL). */
+const DUST_LAMPORTS = 10_000;
+/** Fee fallback when getFeeForMessage can't be read (RPC hiccup): ~0.0002 SOL. */
+const FEE_FALLBACK_LAMPORTS = 200_000;
 
 let relayer: Keypair | null = null;
 
@@ -23,20 +26,44 @@ function getRelayer(): Keypair {
   return relayer;
 }
 
+/** Rent-exempt minimum for an SPL token account (165 bytes). Cached per process. */
+let rentLamports: number | null = null;
+async function tokenAccountRentLamports(): Promise<number> {
+  if (rentLamports == null) {
+    rentLamports = await getConnection().getMinimumBalanceForRentExemption(165);
+  }
+  return rentLamports;
+}
+
+/** Exact network fee (base + encoded priority fee) for an already-built tx. */
+async function estimateTxFeeLamports(txBase64: string): Promise<number> {
+  const conn = getConnection();
+  const tx = VersionedTransaction.deserialize(Buffer.from(txBase64, "base64"));
+  const { value } = await conn.getFeeForMessage(tx.message);
+  return value ?? FEE_FALLBACK_LAMPORTS;
+}
+
+/** Whether `owner` has no associated token account yet for `mint`. */
+export async function userMissingAta(owner: string, mint: string): Promise<boolean> {
+  const ata = await getAssociatedTokenAddress(new PublicKey(mint), new PublicKey(owner));
+  return !(await getConnection().getAccountInfo(ata));
+}
+
 /**
- * Sponsor gas for the user's next transaction: the relayer sends a fixed SOL
- * buffer to the user's wallet so the fee (and any account rent) is paid out of
- * relayer-funded SOL, never the user's own balance. Sent before EVERY action —
- * trade, conversion, or withdrawal, whether paid in USDC or SOL — since the user
- * already holds whatever they're spending and only needs gas added on top. The
- * result: the user pays exactly 0 in fees. No-op if the relayer isn't configured.
+ * Ensure the user's wallet holds at least `requiredLamports`, sending the
+ * shortfall (plus dust) from the relayer. The required amount already accounts
+ * for the SOL the user intends to spend, so this naturally funds nothing when
+ * the user has enough. Awaits confirmation so the SOL is spendable before the
+ * user's transaction. No-op if the relayer isn't configured.
  */
-export async function fundGas(userWallet: string): Promise<boolean> {
+async function topUpGasIfNeeded(userWallet: string, requiredLamports: number): Promise<boolean> {
   if (!features.hasRelayer) return false;
+  const balance = Math.round((await getSolBalance(userWallet)) * 1e9);
+  if (balance >= requiredLamports) return false;
 
   const conn = getConnection();
   const payer = getRelayer();
-  const lamports = Math.round(GAS_BUFFER_SOL * LAMPORTS_PER_SOL);
+  const lamports = requiredLamports - balance + DUST_LAMPORTS;
 
   const { blockhash } = await conn.getLatestBlockhash();
   const message = new TransactionMessage({
@@ -65,4 +92,29 @@ export async function fundGas(userWallet: string): Promise<boolean> {
     await new Promise((r) => setTimeout(r, 1000));
   }
   throw new Error("Gas funding confirmation timed out");
+}
+
+/**
+ * Sponsor gas for a built transaction so the user pays 0 in fees. Funds exactly
+ * what the tx needs beyond the user's balance:
+ *   required = spendLamports + fee + (wrapsSol + newAtaCount) * tokenAccountRent
+ * where `spendLamports` is the SOL the user is intentionally spending (0 for a
+ * USDC-funded action). `wrapsSol` covers the temporary wSOL account Jupiter uses
+ * when SOL is on either side of a swap (its rent refunds to the user on close,
+ * but must be available during execution); `newAtaCount` covers token accounts
+ * the tx opens and keeps. No-op if the relayer isn't configured.
+ */
+export async function sponsorGasForTx(
+  userWallet: string,
+  opts: { txBase64: string; spendLamports?: number; wrapsSol?: boolean; newAtaCount?: number },
+): Promise<boolean> {
+  if (!features.hasRelayer) return false;
+  const { txBase64, spendLamports = 0, wrapsSol = false, newAtaCount = 0 } = opts;
+
+  const fee = await estimateTxFeeLamports(txBase64);
+  const accounts = (wrapsSol ? 1 : 0) + newAtaCount;
+  const rent = accounts > 0 ? accounts * (await tokenAccountRentLamports()) : 0;
+  const required = spendLamports + fee + rent;
+
+  return topUpGasIfNeeded(userWallet, required);
 }

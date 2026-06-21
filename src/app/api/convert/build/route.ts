@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getUserId } from "@/lib/auth/identify";
 import { MINTS } from "@/lib/solana/connection";
+import { sponsorGasForTx, userMissingAta } from "@/lib/solana/relayer";
 import {
   buildSwapTransaction,
   fromBaseUnits,
@@ -40,6 +41,20 @@ export async function POST(request: Request) {
       amount: toBaseUnits(amount, input.decimals),
     });
     const swapTransaction = await buildSwapTransaction({ quote, userPublicKey });
+
+    // Relayer sponsors the exact gas. A SOL⇄USDC swap always wraps/unwraps SOL;
+    // converting into USDC may open the user's USDC account.
+    try {
+      await sponsorGasForTx(userPublicKey, {
+        txBase64: swapTransaction,
+        spendLamports: from === "SOL" ? Number(toBaseUnits(amount, 9)) : 0,
+        wrapsSol: true,
+        newAtaCount: from === "SOL" && (await userMissingAta(userPublicKey, MINTS.USDC)) ? 1 : 0,
+      });
+    } catch {
+      // Best-effort — see trade/swap route.
+    }
+
     return NextResponse.json({
       swapTransaction,
       outAmount: fromBaseUnits(quote.outAmount, output.decimals),

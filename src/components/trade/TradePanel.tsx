@@ -7,12 +7,12 @@ import { useExecuteTrade } from "@/hooks/use-execute-trade";
 import { Button } from "@/components/ui/button";
 import { AssetIcon } from "@/components/ui/asset-icon";
 import { cn, formatTokenPrice, formatUsd } from "@/lib/utils";
+import { SOL_WRAP_RESERVE } from "@/lib/sol-reserve";
 import type { TokenDetail } from "@/types/market";
 
 type Side = "buy" | "sell";
 type PayAsset = "SOL" | "USDC";
 const PERCENTS = [25, 50, 100];
-const SOL_GAS_RESERVE = 0.0005; // keep a little SOL for fees on "max" buys
 
 function fmtAmount(n: number, max = 6): string {
   if (!Number.isFinite(n) || n === 0) return "0";
@@ -55,7 +55,7 @@ export function TradePanel({ token }: { token: TokenDetail }) {
   const maxAmount =
     side === "buy"
       ? payAsset === "SOL"
-        ? Math.max(0, payBalance - SOL_GAS_RESERVE)
+        ? Math.max(0, payBalance - SOL_WRAP_RESERVE)
         : payBalance
       : holding;
   const currentPct =

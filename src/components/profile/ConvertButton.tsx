@@ -8,9 +8,9 @@ import { useConvert } from "@/hooks/use-convert";
 import { Button } from "@/components/ui/button";
 import { Modal } from "@/components/ui/modal";
 import { AssetIcon } from "@/components/ui/asset-icon";
+import { SOL_WRAP_RESERVE } from "@/lib/sol-reserve";
 
 type Asset = "SOL" | "USDC";
-const SOL_GAS_RESERVE = 0.01;
 
 /** Convert (swap) SOL ⇄ USDC inside the user's own wallet. */
 export function ConvertButton() {
@@ -25,7 +25,7 @@ export function ConvertButton() {
   const to: Asset = from === "SOL" ? "USDC" : "SOL";
   const solPrice = account?.solPriceUsd ?? 0;
   const balance = from === "SOL" ? solBalance : usdcBalance;
-  const max = from === "SOL" ? Math.max(0, balance - SOL_GAS_RESERVE) : balance;
+  const max = from === "SOL" ? Math.max(0, balance - SOL_WRAP_RESERVE) : balance;
   const amt = Number(amount) || 0;
   const estOut =
     from === "SOL" ? amt * solPrice : solPrice > 0 ? amt / solPrice : 0;
