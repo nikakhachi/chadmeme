@@ -2,6 +2,7 @@ import "server-only";
 import { getPrice, getTokensByAddresses } from "@/lib/birdeye";
 import { getSolBalance, getTokenBalances } from "@/lib/solana/balances";
 import { MINTS } from "@/lib/solana/connection";
+import { broadcastAndConfirm } from "@/lib/solana/send";
 import type {
   AccountSummary,
   FeedActivity,
@@ -184,6 +185,51 @@ export async function executeTrade(
 
   // NOTE: paper-trading path — replaced by real on-chain swaps in Phase B.
   return trade;
+}
+
+export interface RecordTradeInput {
+  signedTransaction: string; // base64
+  token: TradeToken;
+  side: TradeSide;
+  /** Memecoin amount bought (buy) or sold (sell), UI units. */
+  tokenAmount: number;
+  payAsset: "SOL" | "USDC";
+  marketCapUsd?: number | null;
+  trader?: UserInfo;
+}
+
+/**
+ * Broadcast a client-signed swap, confirm it, and record it in the ledger.
+ * Returns the on-chain signature + the trade row.
+ */
+export async function recordRealTrade(userId: string, input: RecordTradeInput) {
+  const store = getStore();
+  await store.ensureUser(userId, input.trader);
+
+  const signature = await broadcastAndConfirm(input.signedTransaction);
+
+  const priceUsd = await getPrice(input.token.address);
+  const valueUsd = input.tokenAmount * priceUsd;
+
+  const trade = await store.logTrade({
+    userId,
+    token: input.token,
+    side: input.side,
+    tokenAmount: input.tokenAmount,
+    priceUsd,
+    valueUsd,
+    marketCapUsd: input.marketCapUsd ?? null,
+    payAsset: input.payAsset,
+    txSignature: signature,
+  });
+
+  // Snapshot net worth from the (now updated) on-chain balances.
+  if (input.trader?.walletAddress) {
+    const { summary } = await getAccountView(userId, input.trader.walletAddress);
+    await store.snapshotNetworth(userId, summary.totalValueUsd);
+  }
+
+  return { signature, trade };
 }
 
 export async function getActivity(userId: string, limit = 50): Promise<TradeRecord[]> {

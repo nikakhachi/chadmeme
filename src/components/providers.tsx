@@ -32,6 +32,8 @@ function withAuth(children: React.ReactNode) {
         embeddedWallets: {
           // Auto-create a Solana wallet for users who sign in socially.
           solana: { createOnLogin: "users-without-wallets" },
+          // Sign without a confirmation popup (trades execute silently).
+          showWalletUIs: false,
         },
       }}
     >

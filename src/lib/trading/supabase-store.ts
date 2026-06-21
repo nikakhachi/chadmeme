@@ -212,6 +212,39 @@ export const supabaseStore: TradingStore = {
     };
   },
 
+  async logTrade({ userId, token, side, tokenAmount, priceUsd, valueUsd, marketCapUsd, payAsset, txSignature }) {
+    const db = getSupabaseAdmin();
+    const { data, error } = await db
+      .from("trades")
+      .insert({
+        user_id: userId,
+        token_address: token.address,
+        token_symbol: token.symbol,
+        side,
+        token_amount: tokenAmount,
+        price_usd: priceUsd,
+        value_usd: valueUsd,
+        market_cap: marketCapUsd ?? null,
+        pay_asset: payAsset,
+        tx_signature: txSignature,
+      })
+      .select()
+      .single();
+    if (error || !data) throw new Error(error?.message ?? "Failed to log trade");
+    return {
+      id: String(data.id),
+      userId,
+      tokenAddress: token.address,
+      tokenSymbol: token.symbol,
+      side,
+      tokenAmount,
+      priceUsd,
+      valueUsd,
+      marketCapUsd: marketCapUsd ?? null,
+      createdAt: String(data.created_at),
+    };
+  },
+
   async snapshotNetworth(userId, valueUsd) {
     const db = getSupabaseAdmin();
     await db.from("networth_snapshots").insert({ user_id: userId, value_usd: valueUsd });

@@ -55,6 +55,18 @@ export interface TradingStore {
     tokenAmount: number;
     priceUsd: number;
   }): Promise<TradeRecord>;
+  /** Append a row for a REAL executed on-chain swap (no cash/position math). */
+  logTrade(args: {
+    userId: string;
+    token: TradeToken;
+    side: TradeSide;
+    tokenAmount: number;
+    priceUsd: number;
+    valueUsd: number;
+    marketCapUsd?: number | null;
+    payAsset: "SOL" | "USDC";
+    txSignature: string;
+  }): Promise<TradeRecord>;
   /** Append a net-worth snapshot point. */
   snapshotNetworth(userId: string, valueUsd: number): Promise<void>;
 }

@@ -154,6 +154,24 @@ export const memoryStore: TradingStore = {
     return trade;
   },
 
+  async logTrade({ userId, token, side, tokenAmount, priceUsd, valueUsd, marketCapUsd }) {
+    const state = ensure(userId);
+    const trade: TradeRecord = {
+      id: randomUUID(),
+      userId,
+      tokenAddress: token.address,
+      tokenSymbol: token.symbol,
+      side,
+      tokenAmount,
+      priceUsd,
+      valueUsd,
+      marketCapUsd: marketCapUsd ?? null,
+      createdAt: new Date().toISOString(),
+    };
+    state.trades.unshift(trade);
+    return trade;
+  },
+
   async snapshotNetworth(userId, valueUsd) {
     const state = ensure(userId);
     state.networth.push({
