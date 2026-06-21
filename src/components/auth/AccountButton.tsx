@@ -47,6 +47,9 @@ export function AccountButton() {
           size="sm"
           className="size-8"
         />
+        <span className="hidden max-w-[120px] truncate text-sm font-medium sm:block">
+          {username}
+        </span>
         <ChevronDown className="size-4 text-muted" />
       </button>
 
