@@ -9,7 +9,7 @@ import { AssetIcon } from "@/components/ui/asset-icon";
 import { cn } from "@/lib/utils";
 
 type Asset = "SOL" | "USDC";
-const SOL_GAS_RESERVE = 0.01;
+const SOL_GAS_RESERVE = 0.005;
 
 /** "Withdraw" button → modal to send SOL/USDC to an external Solana address. */
 export function WithdrawButton() {

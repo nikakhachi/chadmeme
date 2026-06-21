@@ -70,7 +70,7 @@ export async function buildSwapTransaction(params: {
       dynamicComputeUnitLimit: true,
       dynamicSlippage: true,
       prioritizationFeeLamports: {
-        priorityLevelWithMaxLamports: { maxLamports: 2_000_000, priorityLevel: "high" },
+        priorityLevelWithMaxLamports: { maxLamports: 500_000, priorityLevel: "high" },
       },
     }),
     cache: "no-store",

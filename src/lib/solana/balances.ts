@@ -40,18 +40,20 @@ export async function getTokenBalances(owner: string): Promise<TokenBalance[]> {
         .catch(() => ({ value: [] as never[] })),
     ]);
 
-    const balances: TokenBalance[] = [];
+    // A wallet can hold multiple token accounts for the same mint — aggregate.
+    const byMint = new Map<string, TokenBalance>();
     for (const { account } of [...legacy.value, ...token2022.value]) {
       const info = account.data.parsed.info as {
         mint: string;
         tokenAmount: { uiAmount: number | null; decimals: number };
       };
       const amount = info.tokenAmount.uiAmount ?? 0;
-      if (amount > 0) {
-        balances.push({ mint: info.mint, amount, decimals: info.tokenAmount.decimals });
-      }
+      if (amount <= 0) continue;
+      const existing = byMint.get(info.mint);
+      if (existing) existing.amount += amount;
+      else byMint.set(info.mint, { mint: info.mint, amount, decimals: info.tokenAmount.decimals });
     }
-    return balances;
+    return [...byMint.values()];
   } catch {
     return [];
   }

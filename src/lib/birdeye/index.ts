@@ -1,5 +1,4 @@
 import "server-only";
-import { features } from "@/lib/env";
 import type {
   Candle,
   ChartInterval,
@@ -9,25 +8,30 @@ import type {
   TokenDetail,
 } from "@/types/market";
 import { birdeyeGet } from "./client";
-import {
-  mockCandles,
-  mockHolders,
-  mockPrice,
-  mockTokenDetail,
-  mockTrades,
-  mockTrendingTokens,
-} from "./mock";
 
 /**
  * Public BirdEye data API — the only module the rest of the app imports for
- * market data. Each function returns normalized `@/types/market` shapes and
- * transparently falls back to mock data when the key is missing or a request
- * fails, so callers never need to handle "no data" specially.
- *
- * NOTE: BirdEye hides full response schemas behind its API console, so the
- * mappers below read several possible field-name variants defensively. Verify
- * against a live key and tighten if needed (search: "VERIFY-FIELD").
+ * market data. Returns normalized `@/types/market` shapes. There is NO mock
+ * fallback: on a missing key or a failed/rate-limited request, reads return
+ * empty/zero so real API problems are visible (not masked by fake data).
  */
+
+/** Minimal placeholder when a token's detail can't be loaded (surfaces the gap). */
+function placeholderTokenDetail(address: string): TokenDetail {
+  return {
+    address,
+    symbol: "—",
+    name: "Unknown",
+    decimals: 9,
+    priceUsd: 0,
+    priceChange24h: 0,
+    marketCap: 0,
+    volume24h: 0,
+    liquidity: 0,
+    holders: 0,
+    supply: 0,
+  };
+}
 
 /** Pick the first defined value among candidate keys on a raw object. */
 function pick<T>(obj: Record<string, unknown>, ...keys: string[]): T | undefined {
@@ -46,7 +50,6 @@ function num(value: unknown, fallback = 0): number {
 // ── Trending tokens ──────────────────────────────────────────────────────────
 
 export async function getTrendingTokens(limit = 50): Promise<Token[]> {
-  if (!features.hasBirdeye) return mockTrendingTokens(limit);
   try {
     const data = await birdeyeGet<{ tokens?: Record<string, unknown>[] }>(
       "/defi/token_trending",
@@ -55,30 +58,16 @@ export async function getTrendingTokens(limit = 50): Promise<Token[]> {
     const tokens = data.tokens ?? [];
     return tokens.map(mapToken);
   } catch {
-    return mockTrendingTokens(limit);
+    return [];
   }
 }
 
 // ── Search ───────────────────────────────────────────────────────────────────
 
-/**
- * Search all Solana tokens by name/symbol/address via BirdEye `/defi/v3/search`.
- * Falls back to filtering the mock list when no key is configured.
- */
+/** Search all Solana tokens by name/symbol/address via BirdEye `/defi/v3/search`. */
 export async function searchTokens(query: string, limit = 12): Promise<Token[]> {
   const q = query.trim();
   if (!q) return [];
-  if (!features.hasBirdeye) {
-    const lower = q.toLowerCase();
-    return mockTrendingTokens(50)
-      .filter(
-        (t) =>
-          t.symbol.toLowerCase().includes(lower) ||
-          t.name.toLowerCase().includes(lower) ||
-          t.address.toLowerCase().includes(lower),
-      )
-      .slice(0, limit);
-  }
   try {
     const data = await birdeyeGet<{ items?: { type?: string; result?: Record<string, unknown>[] }[] }>(
       "/defi/v3/search",
@@ -107,11 +96,9 @@ export async function searchTokens(query: string, limit = 12): Promise<Token[]> 
 /**
  * Current USD price for one token via `/defi/price` (works on the free tier;
  * `/defi/multi_price` requires a paid plan). Returns 0 on failure so trade
- * execution rejects rather than filling at a stale/fake price. In mock mode
- * (no key) it returns a deterministic mock price instead.
+ * execution rejects rather than filling at a stale/fake price.
  */
 export async function getPrice(address: string): Promise<number> {
-  if (!features.hasBirdeye) return mockPrice(address);
   try {
     const data = await birdeyeGet<{ value?: number }>("/defi/price", {
       params: { address },
@@ -128,9 +115,6 @@ export async function getPrices(
   addresses: string[],
 ): Promise<Record<string, number>> {
   if (addresses.length === 0) return {};
-  if (!features.hasBirdeye) {
-    return Object.fromEntries(addresses.map((a) => [a, mockPrice(a)]));
-  }
   const entries = await Promise.all(
     addresses.map(async (a) => [a, await getPrice(a)] as const),
   );
@@ -140,7 +124,6 @@ export async function getPrices(
 // ── Token detail ─────────────────────────────────────────────────────────────
 
 export async function getTokenDetail(address: string): Promise<TokenDetail> {
-  if (!features.hasBirdeye) return mockTokenDetail(address);
   try {
     const raw = await birdeyeGet<Record<string, unknown>>("/defi/token_overview", {
       params: { address },
@@ -158,7 +141,7 @@ export async function getTokenDetail(address: string): Promise<TokenDetail> {
       top10HoldersPercent: num(pick(raw, "top10HolderPercent")) * 100 || undefined,
     };
   } catch {
-    return mockTokenDetail(address);
+    return placeholderTokenDetail(address);
   }
 }
 
@@ -190,7 +173,6 @@ export async function getOHLCV(
   interval: ChartInterval = "15m",
   count = 150,
 ): Promise<Candle[]> {
-  if (!features.hasBirdeye) return mockCandles(address, interval, count);
   try {
     const now = Math.floor(Date.now() / 1000);
     const from = now - INTERVAL_SECONDS[interval] * count;
@@ -215,14 +197,13 @@ export async function getOHLCV(
       }),
     );
   } catch {
-    return mockCandles(address, interval, count);
+    return [];
   }
 }
 
 // ── Live trades ──────────────────────────────────────────────────────────────
 
 export async function getTokenTrades(address: string, limit = 40): Promise<MarketTrade[]> {
-  if (!features.hasBirdeye) return mockTrades(address, limit);
   try {
     const data = await birdeyeGet<{ items?: Record<string, unknown>[] }>("/defi/txs/token", {
       params: { address, tx_type: "swap", sort_type: "desc", offset: 0, limit },
@@ -230,14 +211,13 @@ export async function getTokenTrades(address: string, limit = 40): Promise<Marke
     });
     return (data.items ?? []).map((it) => mapTrade(it, address));
   } catch {
-    return mockTrades(address, limit);
+    return [];
   }
 }
 
 // ── Holders ──────────────────────────────────────────────────────────────────
 
 export async function getTokenHolders(address: string, limit = 20): Promise<Holder[]> {
-  if (!features.hasBirdeye) return mockHolders(address, limit);
   try {
     // The holder endpoint returns balances only — no USD value or share. We
     // fetch the token's price + supply (cached) to compute both ourselves.
@@ -259,7 +239,7 @@ export async function getTokenHolders(address: string, limit = 20): Promise<Hold
       };
     });
   } catch {
-    return mockHolders(address, limit);
+    return [];
   }
 }
 

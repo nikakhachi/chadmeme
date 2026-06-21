@@ -12,7 +12,7 @@ import type { TokenDetail } from "@/types/market";
 type Side = "buy" | "sell";
 type PayAsset = "SOL" | "USDC";
 const PERCENTS = [25, 50, 100];
-const SOL_GAS_RESERVE = 0.01; // keep a little SOL for fees on "max" buys
+const SOL_GAS_RESERVE = 0.0005; // keep a little SOL for fees on "max" buys
 
 function fmtAmount(n: number, max = 6): string {
   if (!Number.isFinite(n) || n === 0) return "0";
@@ -58,7 +58,8 @@ export function TradePanel({ token }: { token: TokenDetail }) {
         ? Math.max(0, payBalance - SOL_GAS_RESERVE)
         : payBalance
       : holding;
-  const currentPct = maxAmount > 0 ? Math.min(100, Math.round((amt / maxAmount) * 100)) : 0;
+  const currentPct =
+    maxAmount > 0 ? Math.min(100, Math.round((amt / maxAmount) * 100)) : 0;
 
   function setPercent(pct: number) {
     setAmount(String(Number(((maxAmount * pct) / 100).toFixed(6))));
@@ -123,7 +124,9 @@ export function TradePanel({ token }: { token: TokenDetail }) {
               onClick={() => setPayAsset(a)}
               className={cn(
                 "flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-semibold transition-colors",
-                payAsset === a ? "bg-elevated text-foreground" : "text-muted hover:text-foreground",
+                payAsset === a
+                  ? "bg-elevated text-foreground"
+                  : "text-muted hover:text-foreground",
               )}
             >
               <AssetIcon asset={a} className="size-3.5" />
@@ -145,7 +148,9 @@ export function TradePanel({ token }: { token: TokenDetail }) {
           placeholder="0"
           className="w-full bg-transparent px-1 py-3 text-lg font-semibold focus:outline-none"
         />
-        <span className="text-xs text-muted">{side === "buy" ? payAsset : token.symbol}</span>
+        <span className="text-xs text-muted">
+          {side === "buy" ? payAsset : token.symbol}
+        </span>
       </div>
 
       <div className="mb-2 mt-2 grid grid-cols-3 gap-1.5">
@@ -201,7 +206,9 @@ export function TradePanel({ token }: { token: TokenDetail }) {
       </Button>
 
       <div className="mt-2 flex items-center justify-between text-xs text-muted">
-        <span>{formatTokenPrice(token.priceUsd)} / {token.symbol}</span>
+        <span>
+          {formatTokenPrice(token.priceUsd)} / {token.symbol}
+        </span>
         {authenticated && account && (
           <span>
             {side === "sell"
