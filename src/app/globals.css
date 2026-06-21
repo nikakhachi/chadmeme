@@ -44,13 +44,22 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* Tailwind v4 no longer sets a pointer cursor on buttons — restore it. */
+/* Tailwind v4 no longer sets a pointer cursor on interactive elements —
+   restore it for everything clickable. */
 button:not(:disabled),
 [role="button"]:not(:disabled),
-label[for] {
+[role="tab"],
+a[href],
+label[for],
+summary,
+select,
+input[type="checkbox"]:not(:disabled),
+input[type="radio"]:not(:disabled),
+input[type="submit"]:not(:disabled) {
   cursor: pointer;
 }
-button:disabled {
+button:disabled,
+[role="button"][aria-disabled="true"] {
   cursor: not-allowed;
 }
 
