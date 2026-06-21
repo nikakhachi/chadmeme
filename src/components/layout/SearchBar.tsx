@@ -6,6 +6,7 @@ import { Search } from "lucide-react";
 import { useTrending } from "@/hooks/use-trending";
 import { TokenAvatar } from "@/components/ui/token-avatar";
 import { PriceChange } from "@/components/ui/price-change";
+import { StarButton } from "@/components/watchlist/StarButton";
 import { formatCompactUsd, formatTokenPrice, shortenAddress } from "@/lib/utils";
 import type { Token } from "@/types/market";
 
@@ -76,7 +77,9 @@ export function SearchBar() {
       {open && (
         <div
           className="absolute left-1/2 top-full z-50 mt-2 w-[640px] max-w-[92vw] -translate-x-1/2 overflow-hidden rounded-xl border border-line bg-panel shadow-xl"
-          onMouseDown={() => blurTimer.current && clearTimeout(blurTimer.current)}
+          // Keep the input focused on any click inside (so the dropdown stays
+          // open) — e.g. tapping a row's star shouldn't close the results.
+          onMouseDown={(e) => e.preventDefault()}
         >
           {waiting && results.length === 0 ? (
             <p className="px-3 py-4 text-sm text-muted">Searching…</p>
@@ -84,14 +87,22 @@ export function SearchBar() {
             <p className="px-3 py-4 text-sm text-muted">No tokens found.</p>
           ) : (
             results.map((t) => (
-              <button
+              <div
                 key={t.address}
+                role="button"
+                tabIndex={0}
                 onClick={() => go(t.address)}
+                onKeyDown={(e) => e.key === "Enter" && go(t.address)}
                 className="flex w-full items-center gap-2.5 px-3 py-2 text-left hover:bg-elevated"
               >
                 <TokenAvatar symbol={t.symbol} logoURI={t.logoURI} />
                 <div className="min-w-0 flex-1">
-                  <div className="truncate text-sm font-semibold text-foreground">{t.symbol}</div>
+                  <div className="flex items-center gap-1">
+                    <span className="truncate text-sm font-semibold text-foreground">
+                      {t.symbol}
+                    </span>
+                    <StarButton address={t.address} size={13} alwaysVisible />
+                  </div>
                   <div className="flex items-center gap-1.5 text-xs text-muted">
                     <span className="truncate">{t.name}</span>
                     <span className="shrink-0 font-mono text-subtle">
@@ -107,7 +118,7 @@ export function SearchBar() {
                   <PriceChange value={t.priceChange24h} className="w-14 text-right" />
                   <Stat label="VOL" value={formatCompactUsd(t.volume24h)} />
                 </div>
-              </button>
+              </div>
             ))
           )}
         </div>
