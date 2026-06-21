@@ -1,0 +1,59 @@
+@import "tailwindcss";
+
+/*
+  ChadWallet design tokens (dark-only, fomo-inspired).
+  Use semantic Tailwind classes everywhere instead of raw hex:
+    bg-canvas / bg-panel / bg-elevated   surfaces
+    border-line                          hairline borders
+    text-foreground / text-muted / text-subtle
+    text-up / text-down                  price movement (green / red)
+    bg-brand / text-brand                primary accent
+    bg-positive                          buy button
+*/
+@theme {
+  --color-canvas: #0a0b0d;
+  --color-panel: #131418;
+  --color-elevated: #1a1c22;
+  --color-line: #26282f;
+
+  --color-foreground: #f2f3f5;
+  --color-muted: #8b8f9a;
+  --color-subtle: #5f636e;
+
+  --color-up: #16c784;
+  --color-down: #ea4b5a;
+
+  --color-brand: #5b73ff;
+  --color-brand-foreground: #ffffff;
+
+  --color-positive: #16c784;
+  --color-positive-foreground: #04130c;
+
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+}
+
+html {
+  color-scheme: dark;
+}
+
+body {
+  background: var(--color-canvas);
+  color: var(--color-foreground);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Thin, unobtrusive scrollbars to match the trading-app feel. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-line) transparent;
+}
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+*::-webkit-scrollbar-thumb {
+  background: var(--color-line);
+  border-radius: 9999px;
+}
