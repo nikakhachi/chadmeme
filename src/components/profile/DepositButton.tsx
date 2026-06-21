@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Modal } from "@/components/ui/modal";
 import { CopyAddress } from "@/components/ui/copy-address";
 import { SolIcon } from "@/components/ui/asset-icon";
+import { Spinner } from "@/components/ui/spinner";
 
 /**
  * "Deposit" button that opens a modal with the user's Solana wallet address as
@@ -19,7 +20,7 @@ export function DepositButton({
   variant?: "outline" | "primary";
   size?: "sm" | "md";
 }) {
-  const { walletAddress, isMock } = useAuth();
+  const { walletAddress, isMock, authenticated } = useAuth();
   const [open, setOpen] = useState(false);
 
   return (
@@ -63,6 +64,11 @@ export function DepositButton({
                 </p>
               )}
             </>
+          ) : authenticated ? (
+            <div className="flex flex-col items-center gap-3 py-4 text-sm text-muted">
+              <Spinner className="size-6" />
+              Generating your wallet…
+            </div>
           ) : (
             <p className="text-sm text-muted">
               Log in to generate a wallet address.
