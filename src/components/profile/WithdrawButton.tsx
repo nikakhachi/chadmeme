@@ -22,13 +22,20 @@ export function WithdrawButton() {
   const [destination, setDestination] = useState("");
   const [signature, setSignature] = useState<string | null>(null);
 
-  const balance = asset === "SOL" ? account?.solBalance ?? 0 : account?.usdcBalance ?? 0;
-  const max = asset === "SOL" ? Math.max(0, balance - SOL_GAS_RESERVE) : balance;
+  const balance =
+    asset === "SOL" ? (account?.solBalance ?? 0) : (account?.usdcBalance ?? 0);
+  const max =
+    asset === "SOL" ? Math.max(0, balance - SOL_GAS_RESERVE) : balance;
   const amt = Number(amount) || 0;
-  const canSubmit = !pending && amt > 0 && amt <= balance && destination.trim().length >= 32;
+  const canSubmit =
+    !pending && amt > 0 && amt <= balance && destination.trim().length >= 32;
 
   async function submit() {
-    const sig = await withdraw({ asset, amount: amt, destination: destination.trim() });
+    const sig = await withdraw({
+      asset,
+      amount: amt,
+      destination: destination.trim(),
+    });
     if (sig) {
       setSignature(sig);
       setAmount("");
@@ -72,7 +79,9 @@ export function WithdrawButton() {
                   onClick={() => setAsset(a)}
                   className={cn(
                     "flex-1 rounded-md py-1.5 text-sm font-semibold transition-colors",
-                    asset === a ? "bg-elevated text-foreground" : "text-muted hover:text-foreground",
+                    asset === a
+                      ? "bg-elevated text-foreground"
+                      : "text-muted hover:text-foreground",
                   )}
                 >
                   {a}
@@ -83,21 +92,28 @@ export function WithdrawButton() {
             <div>
               <div className="mb-1 flex justify-between text-xs text-muted">
                 <span>Amount</span>
-                <button onClick={() => setAmount(String(Number(max.toFixed(6))))} className="hover:text-foreground">
+                <button
+                  onClick={() => setAmount(String(Number(max.toFixed(6))))}
+                  className="hover:text-foreground"
+                >
                   Max {max.toFixed(asset === "SOL" ? 4 : 2)} {asset}
                 </button>
               </div>
               <input
                 inputMode="decimal"
                 value={amount}
-                onChange={(e) => setAmount(e.target.value.replace(/[^0-9.]/g, ""))}
+                onChange={(e) =>
+                  setAmount(e.target.value.replace(/[^0-9.]/g, ""))
+                }
                 placeholder="0"
                 className="w-full rounded-lg border border-line bg-canvas px-3 py-2.5 text-lg font-semibold focus:border-brand focus:outline-none"
               />
             </div>
 
             <div>
-              <label className="mb-1 block text-xs text-muted">Destination (Solana address)</label>
+              <label className="mb-1 block text-xs text-muted">
+                Destination (Solana address)
+              </label>
               <input
                 value={destination}
                 onChange={(e) => setDestination(e.target.value.trim())}
@@ -106,7 +122,12 @@ export function WithdrawButton() {
               />
             </div>
 
-            <Button onClick={submit} disabled={!canSubmit} className="w-full" size="lg">
+            <Button
+              onClick={submit}
+              disabled={!canSubmit}
+              className="w-full"
+              size="lg"
+            >
               {pending ? "Sending…" : `Withdraw ${asset}`}
             </Button>
             {error && <p className="text-center text-xs text-down">{error}</p>}

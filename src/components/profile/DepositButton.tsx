@@ -19,7 +19,7 @@ export function DepositButton() {
     <>
       <Button variant="outline" onClick={() => setOpen(true)}>
         <ArrowDownToLine className="size-4" />
-        Deposit Crypto
+        Deposit
       </Button>
 
       <Modal
