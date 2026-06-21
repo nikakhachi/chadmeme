@@ -47,12 +47,11 @@ export async function POST(request: Request) {
     try {
       await sponsorGasForTx(userPublicKey, {
         txBase64: swapTransaction,
-        spendLamports: from === "SOL" ? Number(toBaseUnits(amount, 9)) : 0,
         wrapsSol: true,
         newAtaCount: from === "SOL" && (await userMissingAta(userPublicKey, MINTS.USDC)) ? 1 : 0,
       });
-    } catch {
-      // Best-effort — see trade/swap route.
+    } catch (err) {
+      console.error("[gas] convert sponsorship failed:", err);
     }
 
     return NextResponse.json({

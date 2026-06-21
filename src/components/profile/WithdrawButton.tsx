@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button";
 import { Modal } from "@/components/ui/modal";
 import { AssetIcon } from "@/components/ui/asset-icon";
 import { cn } from "@/lib/utils";
-import { SOL_WITHDRAW_RESERVE } from "@/lib/sol-reserve";
 
 type Asset = "SOL" | "USDC";
 
@@ -21,8 +20,8 @@ export function WithdrawButton() {
   const [destination, setDestination] = useState("");
 
   const balance = asset === "SOL" ? solBalance : usdcBalance;
-  const max =
-    asset === "SOL" ? Math.max(0, balance - SOL_WITHDRAW_RESERVE) : balance;
+  // Relayer sponsors the network fee, so the full balance is withdrawable.
+  const max = balance;
   const amt = Number(amount) || 0;
   const canSubmit =
     !pending && amt > 0 && amt <= balance && destination.trim().length >= 32;

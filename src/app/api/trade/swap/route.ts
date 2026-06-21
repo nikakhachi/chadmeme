@@ -66,12 +66,11 @@ export async function POST(request: Request) {
             : 0;
       await sponsorGasForTx(userPublicKey, {
         txBase64: swapTransaction,
-        spendLamports: side === "buy" && payAsset === "SOL" ? Number(toBaseUnits(amount, 9)) : 0,
         wrapsSol: payAsset === "SOL",
         newAtaCount,
       });
-    } catch {
-      // ignore — see comment above.
+    } catch (err) {
+      console.error("[gas] trade sponsorship failed:", err);
     }
 
     return NextResponse.json({

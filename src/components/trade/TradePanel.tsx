@@ -7,7 +7,6 @@ import { useExecuteTrade } from "@/hooks/use-execute-trade";
 import { Button } from "@/components/ui/button";
 import { AssetIcon } from "@/components/ui/asset-icon";
 import { cn, formatTokenPrice, formatUsd } from "@/lib/utils";
-import { SOL_WRAP_RESERVE } from "@/lib/sol-reserve";
 import type { TokenDetail } from "@/types/market";
 
 type Side = "buy" | "sell";
@@ -51,13 +50,9 @@ export function TradePanel({ token }: { token: TokenDetail }) {
     return payPrice > 0 ? usd / payPrice : 0;
   }, [side, amt, payPrice, token.priceUsd]);
 
-  // Max spendable/sellable for the current side (SOL keeps a gas reserve).
-  const maxAmount =
-    side === "buy"
-      ? payAsset === "SOL"
-        ? Math.max(0, payBalance - SOL_WRAP_RESERVE)
-        : payBalance
-      : holding;
+  // Max spendable/sellable for the current side. The relayer sponsors gas on top
+  // of the trade, so the user can spend their FULL balance (no SOL held back).
+  const maxAmount = side === "buy" ? payBalance : holding;
   const currentPct =
     maxAmount > 0 ? Math.min(100, Math.round((amt / maxAmount) * 100)) : 0;
 

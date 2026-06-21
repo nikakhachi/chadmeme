@@ -10,7 +10,6 @@ import {
 import { getAssociatedTokenAddress } from "@solana/spl-token";
 import { serverEnv, features } from "@/lib/env";
 import { getConnection } from "./connection";
-import { getSolBalance } from "./balances";
 
 /** Tiny safety margin added on top of the precise requirement (0.00001 SOL). */
 const DUST_LAMPORTS = 10_000;
@@ -50,20 +49,17 @@ export async function userMissingAta(owner: string, mint: string): Promise<boole
 }
 
 /**
- * Ensure the user's wallet holds at least `requiredLamports`, sending the
- * shortfall (plus dust) from the relayer. The required amount already accounts
- * for the SOL the user intends to spend, so this naturally funds nothing when
- * the user has enough. Awaits confirmation so the SOL is spendable before the
- * user's transaction. No-op if the relayer isn't configured.
+ * Send `lamports` of gas SOL from the relayer to the user, awaiting confirmation
+ * so it's spendable before the user's transaction. Sent on EVERY action (never
+ * conditioned on the user's balance) so network fees always come out of
+ * relayer-funded SOL, not the user's own — the user pays exactly 0. No-op if the
+ * relayer isn't configured or there's nothing to send.
  */
-async function topUpGasIfNeeded(userWallet: string, requiredLamports: number): Promise<boolean> {
-  if (!features.hasRelayer) return false;
-  const balance = Math.round((await getSolBalance(userWallet)) * 1e9);
-  if (balance >= requiredLamports) return false;
+async function sendGasToUser(userWallet: string, lamports: number): Promise<boolean> {
+  if (!features.hasRelayer || lamports <= 0) return false;
 
   const conn = getConnection();
   const payer = getRelayer();
-  const lamports = requiredLamports - balance + DUST_LAMPORTS;
 
   const { blockhash } = await conn.getLatestBlockhash();
   const message = new TransactionMessage({
@@ -95,26 +91,27 @@ async function topUpGasIfNeeded(userWallet: string, requiredLamports: number): P
 }
 
 /**
- * Sponsor gas for a built transaction so the user pays 0 in fees. Funds exactly
- * what the tx needs beyond the user's balance:
- *   required = spendLamports + fee + (wrapsSol + newAtaCount) * tokenAccountRent
- * where `spendLamports` is the SOL the user is intentionally spending (0 for a
- * USDC-funded action). `wrapsSol` covers the temporary wSOL account Jupiter uses
- * when SOL is on either side of a swap (its rent refunds to the user on close,
- * but must be available during execution); `newAtaCount` covers token accounts
- * the tx opens and keeps. No-op if the relayer isn't configured.
+ * Sponsor the exact gas a built transaction needs so the user pays 0 in fees.
+ * The relayer always sends the user only the GAS — never the amount they're
+ * spending (the user already holds that) — so the user can spend their full
+ * balance and never dips into it for fees:
+ *   gas = fee + (wrapsSol + newAtaCount) * tokenAccountRent + dust
+ * `wrapsSol` covers the temporary wSOL account Jupiter uses when SOL is on either
+ * side of a swap (its rent refunds to the user on close, but must be available
+ * during execution); `newAtaCount` covers token accounts the tx opens and keeps.
+ * No-op if the relayer isn't configured.
  */
 export async function sponsorGasForTx(
   userWallet: string,
-  opts: { txBase64: string; spendLamports?: number; wrapsSol?: boolean; newAtaCount?: number },
+  opts: { txBase64: string; wrapsSol?: boolean; newAtaCount?: number },
 ): Promise<boolean> {
   if (!features.hasRelayer) return false;
-  const { txBase64, spendLamports = 0, wrapsSol = false, newAtaCount = 0 } = opts;
+  const { txBase64, wrapsSol = false, newAtaCount = 0 } = opts;
 
   const fee = await estimateTxFeeLamports(txBase64);
   const accounts = (wrapsSol ? 1 : 0) + newAtaCount;
   const rent = accounts > 0 ? accounts * (await tokenAccountRentLamports()) : 0;
-  const required = spendLamports + fee + rent;
+  const gas = fee + rent + DUST_LAMPORTS;
 
-  return topUpGasIfNeeded(userWallet, required);
+  return sendGasToUser(userWallet, gas);
 }

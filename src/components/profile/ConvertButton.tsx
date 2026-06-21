@@ -8,7 +8,6 @@ import { useConvert } from "@/hooks/use-convert";
 import { Button } from "@/components/ui/button";
 import { Modal } from "@/components/ui/modal";
 import { AssetIcon } from "@/components/ui/asset-icon";
-import { SOL_WRAP_RESERVE } from "@/lib/sol-reserve";
 
 type Asset = "SOL" | "USDC";
 
@@ -25,7 +24,8 @@ export function ConvertButton() {
   const to: Asset = from === "SOL" ? "USDC" : "SOL";
   const solPrice = account?.solPriceUsd ?? 0;
   const balance = from === "SOL" ? solBalance : usdcBalance;
-  const max = from === "SOL" ? Math.max(0, balance - SOL_WRAP_RESERVE) : balance;
+  // Relayer sponsors gas on top, so the full balance is convertible.
+  const max = balance;
   const amt = Number(amount) || 0;
   const estOut =
     from === "SOL" ? amt * solPrice : solPrice > 0 ? amt / solPrice : 0;

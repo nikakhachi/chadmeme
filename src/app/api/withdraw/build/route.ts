@@ -5,7 +5,6 @@ import { getUserId } from "@/lib/auth/identify";
 import { MINTS } from "@/lib/solana/connection";
 import { buildTransferTransaction } from "@/lib/solana/transfer";
 import { sponsorGasForTx, userMissingAta } from "@/lib/solana/relayer";
-import { toBaseUnits } from "@/lib/solana/jupiter";
 
 const bodySchema = z.object({
   asset: z.enum(["SOL", "USDC"]),
@@ -44,12 +43,11 @@ export async function POST(request: Request) {
     try {
       await sponsorGasForTx(userPublicKey, {
         txBase64: transaction,
-        spendLamports: asset === "SOL" ? Number(toBaseUnits(amount, 9)) : 0,
         wrapsSol: false,
         newAtaCount: asset === "USDC" && (await userMissingAta(destination, MINTS.USDC)) ? 1 : 0,
       });
-    } catch {
-      // Best-effort — see trade/swap route.
+    } catch (err) {
+      console.error("[gas] withdraw sponsorship failed:", err);
     }
 
     return NextResponse.json({ transaction });
