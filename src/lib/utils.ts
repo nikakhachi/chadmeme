@@ -52,6 +52,8 @@ export function formatChartUsd(value: number): string {
   if (abs >= 1_000_000_000_000) return `$${(value / 1_000_000_000_000).toFixed(2)}T`;
   if (abs >= 1_000_000_000) return `$${(value / 1_000_000_000).toFixed(2)}B`;
   if (abs >= 1_000_000) return `$${(value / 1_000_000).toFixed(2)}M`;
+  // Thousands: whole dollars, comma-grouped (no cents — e.g. $739,122).
+  if (abs >= 1000) return `$${value.toLocaleString("en-US", { maximumFractionDigits: 0 })}`;
   if (abs >= 1) return `$${value.toLocaleString("en-US", { maximumFractionDigits: 2 })}`;
   if (abs === 0) return "$0";
   return `$${value.toLocaleString("en-US", { maximumSignificantDigits: 4 })}`;
