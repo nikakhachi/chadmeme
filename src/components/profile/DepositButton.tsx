@@ -12,13 +12,19 @@ import { SolIcon } from "@/components/ui/asset-icon";
  * "Deposit" button that opens a modal with the user's Solana wallet address as
  * a QR code + copyable text. Funds sent here arrive in the embedded wallet.
  */
-export function DepositButton() {
+export function DepositButton({
+  variant = "outline",
+  size = "md",
+}: {
+  variant?: "outline" | "primary";
+  size?: "sm" | "md";
+}) {
   const { walletAddress, isMock } = useAuth();
   const [open, setOpen] = useState(false);
 
   return (
     <>
-      <Button variant="outline" onClick={() => setOpen(true)}>
+      <Button variant={variant} size={size} onClick={() => setOpen(true)}>
         <ArrowDownToLine className="size-4" />
         Deposit
       </Button>

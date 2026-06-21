@@ -1,5 +1,6 @@
 import { Logo } from "./Logo";
 import { SearchBar } from "./SearchBar";
+import { NavDeposit } from "./NavDeposit";
 import { AccountButton } from "@/components/auth/AccountButton";
 
 /** Global top bar: wordmark, token search, account/balance. */
@@ -10,6 +11,7 @@ export function TopBar() {
       <div className="mx-auto w-full max-w-xl">
         <SearchBar />
       </div>
+      <NavDeposit />
       <AccountButton />
     </header>
   );

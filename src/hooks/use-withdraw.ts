@@ -1,8 +1,10 @@
 "use client";
 import { useState } from "react";
 import { useSWRConfig } from "swr";
+import { toast } from "sonner";
 import { useSignTransaction, useWallets } from "@privy-io/react-auth/solana";
 import { useAuth } from "@/components/auth/auth-context";
+import { toastTx } from "@/lib/toast-tx";
 
 function base64ToBytes(b64: string): Uint8Array {
   const bin = atob(b64);
@@ -70,9 +72,11 @@ export function useWithdraw() {
       const sent = await sendRes.json();
       if (!sendRes.ok) {
         setError(sent.error ?? "Withdrawal failed.");
+        toast.error(sent.error ?? "Withdrawal failed.");
         return null;
       }
 
+      toastTx("Withdrawal sent", sent.signature, `${args.amount} ${args.asset}`);
       mutate((key) => Array.isArray(key) && key[0] === "/api/account");
       return sent.signature as string;
     } catch (err) {

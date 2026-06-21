@@ -1,8 +1,10 @@
 "use client";
 import { useState } from "react";
 import { useSWRConfig } from "swr";
+import { toast } from "sonner";
 import { useSignTransaction, useWallets } from "@privy-io/react-auth/solana";
 import { useAuth } from "@/components/auth/auth-context";
+import { toastTx } from "@/lib/toast-tx";
 import type { TradeSide } from "@/types/market";
 
 export interface ExecuteTradeArgs {
@@ -108,8 +110,15 @@ export function useExecuteTrade() {
       const sent = await sendRes.json();
       if (!sendRes.ok) {
         setError(sent.error ?? "Trade failed.");
+        toast.error(sent.error ?? "Trade failed.");
         return false;
       }
+
+      toastTx(
+        args.side === "buy" ? `Bought ${args.token.symbol}` : `Sold ${args.token.symbol}`,
+        sent.signature,
+        `Paid with ${args.payAsset}`,
+      );
 
       // Refresh account + activity + feed.
       mutate(

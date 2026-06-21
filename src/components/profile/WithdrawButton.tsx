@@ -21,7 +21,6 @@ export function WithdrawButton() {
   const [asset, setAsset] = useState<Asset>("SOL");
   const [amount, setAmount] = useState("");
   const [destination, setDestination] = useState("");
-  const [signature, setSignature] = useState<string | null>(null);
 
   const balance =
     asset === "SOL" ? (account?.solBalance ?? 0) : (account?.usdcBalance ?? 0);
@@ -32,15 +31,11 @@ export function WithdrawButton() {
     !pending && amt > 0 && amt <= balance && destination.trim().length >= 32;
 
   async function submit() {
-    const sig = await withdraw({
-      asset,
-      amount: amt,
-      destination: destination.trim(),
-    });
+    const sig = await withdraw({ asset, amount: amt, destination: destination.trim() });
     if (sig) {
-      setSignature(sig);
       setAmount("");
       setDestination("");
+      setOpen(false); // success feedback is a toast (with a Solscan link)
     }
   }
 
@@ -51,28 +46,8 @@ export function WithdrawButton() {
         Withdraw
       </Button>
 
-      <Modal
-        open={open}
-        onClose={() => {
-          setOpen(false);
-          setSignature(null);
-        }}
-        title="Withdraw crypto"
-      >
-        {signature ? (
-          <div className="text-center">
-            <p className="mb-2 text-sm text-up">Withdrawal sent!</p>
-            <a
-              href={`https://solscan.io/tx/${signature}`}
-              target="_blank"
-              rel="noreferrer"
-              className="break-all text-xs text-brand hover:underline"
-            >
-              View on Solscan
-            </a>
-          </div>
-        ) : (
-          <div className="space-y-3">
+      <Modal open={open} onClose={() => setOpen(false)} title="Withdraw crypto">
+        <div className="space-y-3">
             <div className="flex gap-0.5 rounded-lg bg-canvas p-0.5">
               {(["SOL", "USDC"] as Asset[]).map((a) => (
                 <button
@@ -133,8 +108,7 @@ export function WithdrawButton() {
               {pending ? "Sending…" : `Withdraw ${asset}`}
             </Button>
             {error && <p className="text-center text-xs text-down">{error}</p>}
-          </div>
-        )}
+        </div>
       </Modal>
     </>
   );

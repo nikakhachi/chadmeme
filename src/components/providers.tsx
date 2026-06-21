@@ -1,5 +1,6 @@
 "use client";
 import { PrivyProvider } from "@privy-io/react-auth";
+import { Toaster } from "sonner";
 import { publicEnv, features } from "@/lib/env";
 import { PrivyAuthBridge } from "./auth/PrivyAuthBridge";
 import { MockAuthBridge } from "./auth/MockAuthBridge";
@@ -11,7 +12,12 @@ import { WatchlistProvider } from "./watchlist/watchlist-context";
  * state wraps everything so any component can star/unstar tokens.
  */
 export function Providers({ children }: { children: React.ReactNode }) {
-  return <WatchlistProvider>{withAuth(children)}</WatchlistProvider>;
+  return (
+    <WatchlistProvider>
+      {withAuth(children)}
+      <Toaster theme="dark" position="bottom-right" toastOptions={{ className: "!bg-elevated !border-line !text-foreground" }} />
+    </WatchlistProvider>
+  );
 }
 
 function withAuth(children: React.ReactNode) {

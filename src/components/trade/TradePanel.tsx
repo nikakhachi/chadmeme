@@ -26,7 +26,6 @@ export function TradePanel({ token }: { token: TokenDetail }) {
   const [side, setSide] = useState<Side>("buy");
   const [payAsset, setPayAsset] = useState<PayAsset>("SOL");
   const [amount, setAmount] = useState("");
-  const [flash, setFlash] = useState<string | null>(null);
 
   const position = useMemo(
     () => positions.find((p) => p.tokenAddress === token.address),
@@ -74,11 +73,7 @@ export function TradePanel({ token }: { token: TokenDetail }) {
       payAsset,
       amount: amt,
     });
-    if (ok) {
-      setFlash(side === "buy" ? `Bought ${token.symbol}` : `Sold ${token.symbol}`);
-      setAmount("");
-      setTimeout(() => setFlash(null), 3000);
-    }
+    if (ok) setAmount(""); // success feedback is a toast
   }
 
   const canSubmit =
@@ -201,7 +196,6 @@ export function TradePanel({ token }: { token: TokenDetail }) {
         </div>
       )}
 
-      {flash && <p className="mt-2 text-center text-xs text-up">{flash}</p>}
       {error && <p className="mt-2 text-center text-xs text-down">{error}</p>}
     </div>
   );
