@@ -68,6 +68,8 @@ export async function POST(request: Request) {
         txBase64: swapTransaction,
         wrapsSol: payAsset === "SOL",
         newAtaCount,
+        // Headroom for intermediate token accounts a multi-hop route may open.
+        extraRentAccounts: 2,
       });
     } catch (err) {
       console.error("[gas] trade sponsorship failed:", err);

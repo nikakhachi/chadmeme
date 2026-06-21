@@ -95,21 +95,25 @@ async function sendGasToUser(userWallet: string, lamports: number): Promise<bool
  * The relayer always sends the user only the GAS — never the amount they're
  * spending (the user already holds that) — so the user can spend their full
  * balance and never dips into it for fees:
- *   gas = fee + (wrapsSol + newAtaCount) * tokenAccountRent + dust
+ *   gas = fee + (wrapsSol + newAtaCount + extraRentAccounts) * tokenAccountRent + dust
  * `wrapsSol` covers the temporary wSOL account Jupiter uses when SOL is on either
  * side of a swap (its rent refunds to the user on close, but must be available
- * during execution); `newAtaCount` covers token accounts the tx opens and keeps.
- * No-op if the relayer isn't configured.
+ * during execution); `newAtaCount` covers token accounts the tx opens and keeps;
+ * `extraRentAccounts` is headroom for token accounts a Jupiter route opens that
+ * we can't see from outside (e.g. intermediate accounts on a multi-hop route —
+ * these are created and closed within the tx, so the rent refunds to the user,
+ * but it must be available during execution or the swap fails). No-op if the
+ * relayer isn't configured.
  */
 export async function sponsorGasForTx(
   userWallet: string,
-  opts: { txBase64: string; wrapsSol?: boolean; newAtaCount?: number },
+  opts: { txBase64: string; wrapsSol?: boolean; newAtaCount?: number; extraRentAccounts?: number },
 ): Promise<boolean> {
   if (!features.hasRelayer) return false;
-  const { txBase64, wrapsSol = false, newAtaCount = 0 } = opts;
+  const { txBase64, wrapsSol = false, newAtaCount = 0, extraRentAccounts = 0 } = opts;
 
   const fee = await estimateTxFeeLamports(txBase64);
-  const accounts = (wrapsSol ? 1 : 0) + newAtaCount;
+  const accounts = (wrapsSol ? 1 : 0) + newAtaCount + extraRentAccounts;
   const rent = accounts > 0 ? accounts * (await tokenAccountRentLamports()) : 0;
   const gas = fee + rent + DUST_LAMPORTS;
 

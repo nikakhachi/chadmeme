@@ -49,6 +49,8 @@ export async function POST(request: Request) {
         txBase64: swapTransaction,
         wrapsSol: true,
         newAtaCount: from === "SOL" && (await userMissingAta(userPublicKey, MINTS.USDC)) ? 1 : 0,
+        // Headroom for intermediate token accounts a multi-hop route may open.
+        extraRentAccounts: 2,
       });
     } catch (err) {
       console.error("[gas] convert sponsorship failed:", err);
