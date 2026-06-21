@@ -27,6 +27,8 @@ export const serverEnv = {
   r2Bucket: process.env.R2_BUCKET ?? "",
   /** Public base URL the bucket serves from (e.g. https://pub-xxx.r2.dev). */
   r2PublicUrl: process.env.R2_PUBLIC_URL ?? "",
+  /** Relayer hot wallet (base58 secret) that sponsors users' gas (SOL top-ups). */
+  relayerSecretKey: process.env.RELAYER_SECRET_KEY ?? "",
 } as const;
 
 /** Values safe to expose to the browser. Must be NEXT_PUBLIC_ prefixed. */
@@ -50,4 +52,6 @@ export const features = {
       serverEnv.r2Bucket &&
       serverEnv.r2PublicUrl,
   ),
+  /** Whether gas sponsorship (relayer SOL top-ups) is configured. */
+  hasRelayer: Boolean(serverEnv.relayerSecretKey),
 } as const;
