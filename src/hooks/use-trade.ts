@@ -9,7 +9,9 @@ export interface PlaceTradeArgs {
   side: TradeSide;
   /** Buys: USD to spend. */
   usdAmount?: number;
-  /** Sells: fraction of holdings to sell (0–1). */
+  /** Sells: exact number of tokens to sell (capped to holdings server-side). */
+  tokenAmount?: number;
+  /** Sells: fraction of holdings to sell (0–1). Used by the % buttons. */
   sellFraction?: number;
 }
 

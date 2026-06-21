@@ -55,7 +55,9 @@ export interface ExecuteTradeInput {
   side: TradeSide;
   /** For buys: spend this much USD. */
   usdAmount?: number;
-  /** For sells: sell this fraction of holdings (0–1). Overrides usdAmount. */
+  /** For sells: an exact token quantity. Capped to holdings. */
+  tokenAmount?: number;
+  /** For sells: sell this fraction of holdings (0–1). */
   sellFraction?: number;
 }
 
@@ -70,9 +72,15 @@ export async function executeTrade(
   if (priceUsd <= 0) throw new Error("Could not fetch a live price for this token.");
 
   let tokenAmount: number;
-  if (input.side === "sell" && input.sellFraction !== undefined) {
+  if (input.side === "sell") {
     const position = await store.getPosition(userId, input.token.address);
-    tokenAmount = (position?.amount ?? 0) * input.sellFraction;
+    const held = position?.amount ?? 0;
+    const requested =
+      input.sellFraction !== undefined
+        ? held * input.sellFraction
+        : (input.tokenAmount ?? 0);
+    // Cap to holdings so "sell ~$100" / "100%" never over-sells on rounding.
+    tokenAmount = Math.min(requested, held);
   } else {
     const usd = input.usdAmount ?? 0;
     tokenAmount = usd / priceUsd;

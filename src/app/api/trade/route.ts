@@ -12,6 +12,7 @@ const bodySchema = z.object({
   }),
   side: z.enum(["buy", "sell"]),
   usdAmount: z.number().positive().optional(),
+  tokenAmount: z.number().positive().optional(),
   sellFraction: z.number().min(0).max(1).optional(),
 });
 
