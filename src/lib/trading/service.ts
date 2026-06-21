@@ -40,7 +40,7 @@ export async function getAccountView(
   walletAddress: string | null,
 ): Promise<AccountView> {
   const store = getStore();
-  await store.ensureUser(userId);
+  await store.ensureUser(userId, walletAddress ? { walletAddress } : undefined);
   if (!walletAddress) return { summary: EMPTY_SUMMARY, positions: [] };
 
   const [solBalance, tokenBalances, trades] = await Promise.all([

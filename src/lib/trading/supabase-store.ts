@@ -34,12 +34,23 @@ function rowToPosition(row: Record<string, unknown>): Position {
 export const supabaseStore: TradingStore = {
   async ensureUser(userId, info) {
     const db = getSupabaseAdmin();
-    // Insert-only (ignoreDuplicates): seeds handle/wallet + the cash_usd default
-    // on first creation; never overwrites an existing row.
     const row: Record<string, unknown> = { id: userId };
     if (info?.handle) row.handle = info.handle;
     if (info?.walletAddress) row.wallet_address = info.walletAddress;
     await db.from("users").upsert(row, { onConflict: "id", ignoreDuplicates: true });
+    // Backfill handle/wallet for rows that were created without them (e.g. by an
+    // account fetch before the handle was known). Only fills NULLs — never
+    // overwrites a user-edited username.
+    if (info?.handle) {
+      await db.from("users").update({ handle: info.handle }).eq("id", userId).is("handle", null);
+    }
+    if (info?.walletAddress) {
+      await db
+        .from("users")
+        .update({ wallet_address: info.walletAddress })
+        .eq("id", userId)
+        .is("wallet_address", null);
+    }
   },
 
   async getProfile(userId) {
