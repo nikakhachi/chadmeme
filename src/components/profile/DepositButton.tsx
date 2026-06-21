@@ -19,18 +19,22 @@ export function DepositButton() {
     <>
       <Button variant="outline" onClick={() => setOpen(true)}>
         <ArrowDownToLine className="size-4" />
-        Deposit
+        Deposit Crypto
       </Button>
 
-      <Modal open={open} onClose={() => setOpen(false)} title="Deposit with crypto">
+      <Modal
+        open={open}
+        onClose={() => setOpen(false)}
+        title="Deposit with crypto"
+      >
         <div className="flex flex-col items-center text-center">
           <span className="mb-3 rounded-full bg-elevated px-3 py-1 text-xs font-semibold text-brand">
             Solana network
           </span>
           <p className="mb-4 text-sm text-muted">
             Send <span className="text-foreground">SOL</span> or{" "}
-            <span className="text-foreground">USDC</span> on Solana to the address
-            below. Only send Solana assets — anything else may be lost.
+            <span className="text-foreground">USDC</span> on Solana to the
+            address below. Only send Solana assets — anything else may be lost.
           </p>
 
           {walletAddress ? (
@@ -39,17 +43,22 @@ export function DepositButton() {
                 <QRCodeSVG value={walletAddress} size={176} marginSize={0} />
               </div>
               <div className="mt-4 w-full rounded-lg border border-line bg-canvas px-3 py-2.5">
-                <div className="mb-1 text-xs text-muted">Your Solana address</div>
+                <div className="mb-1 text-xs text-muted">
+                  Your Solana address
+                </div>
                 <CopyAddress address={walletAddress} />
               </div>
               {isMock && (
                 <p className="mt-3 text-xs text-subtle">
-                  Demo mode: placeholder address. Connect Privy for a real wallet.
+                  Demo mode: placeholder address. Connect Privy for a real
+                  wallet.
                 </p>
               )}
             </>
           ) : (
-            <p className="text-sm text-muted">Log in to generate a wallet address.</p>
+            <p className="text-sm text-muted">
+              Log in to generate a wallet address.
+            </p>
           )}
         </div>
       </Modal>
