@@ -23,7 +23,8 @@ export function useFeed() {
   const { data, size, setSize, isLoading, isValidating } = useSWRInfinite<FeedPage>(
     getKey,
     fetcher,
-    { revalidateFirstPage: true, refreshInterval: 15_000 },
+    // Poll every few seconds so new trades show up near-live.
+    { revalidateFirstPage: true, refreshInterval: 5_000 },
   );
 
   const pages = data ?? [];
