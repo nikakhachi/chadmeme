@@ -3,6 +3,7 @@ import { useEffect, useRef } from "react";
 import {
   createChart,
   CandlestickSeries,
+  LineSeries,
   HistogramSeries,
   type IChartApi,
   type ISeriesApi,
@@ -10,19 +11,33 @@ import {
 } from "lightweight-charts";
 import type { Candle } from "@/types/market";
 
+export type ChartType = "candles" | "line";
+export type PriceMode = "price" | "mcap";
+
 /**
- * TradingView Lightweight Charts candlestick + volume chart.
+ * TradingView Lightweight Charts panel. Supports candle/line series and a
+ * price/market-cap scale (market cap = value × circulating supply).
  *
- * The chart instance is created once; data updates flow through refs so we
- * never tear down/recreate the chart on each poll (avoids flicker).
+ * The chart is created once; the price series is rebuilt only when the chart
+ * type changes, and data flows through refs so polling never recreates it.
  */
-export function PriceChart({ candles }: { candles: Candle[] }) {
+export function PriceChart({
+  candles,
+  chartType,
+  priceMode,
+  supply,
+}: {
+  candles: Candle[];
+  chartType: ChartType;
+  priceMode: PriceMode;
+  supply: number;
+}) {
   const containerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<IChartApi | null>(null);
-  const candleSeriesRef = useRef<ISeriesApi<"Candlestick"> | null>(null);
+  const priceSeriesRef = useRef<ISeriesApi<"Candlestick"> | ISeriesApi<"Line"> | null>(null);
   const volumeSeriesRef = useRef<ISeriesApi<"Histogram"> | null>(null);
 
-  // Create the chart once on mount.
+  // Create the chart + volume series once.
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
@@ -43,56 +58,67 @@ export function PriceChart({ candles }: { candles: Candle[] }) {
       autoSize: true,
     });
 
-    const candleSeries = chart.addSeries(CandlestickSeries, {
-      upColor: "#16c784",
-      downColor: "#ea4b5a",
-      borderVisible: false,
-      wickUpColor: "#16c784",
-      wickDownColor: "#ea4b5a",
-    });
-
     const volumeSeries = chart.addSeries(HistogramSeries, {
       priceFormat: { type: "volume" },
       priceScaleId: "volume",
     });
-    // Pin volume to the bottom 20% of the pane.
-    chart.priceScale("volume").applyOptions({
-      scaleMargins: { top: 0.8, bottom: 0 },
-    });
+    chart.priceScale("volume").applyOptions({ scaleMargins: { top: 0.8, bottom: 0 } });
 
     chartRef.current = chart;
-    candleSeriesRef.current = candleSeries;
     volumeSeriesRef.current = volumeSeries;
-
     return () => {
       chart.remove();
       chartRef.current = null;
+      priceSeriesRef.current = null;
     };
   }, []);
 
-  // Push new data whenever candles change.
+  // (Re)create the price series whenever the chart type changes.
   useEffect(() => {
-    if (!candleSeriesRef.current || !volumeSeriesRef.current) return;
-    if (candles.length === 0) return;
+    const chart = chartRef.current;
+    if (!chart) return;
+    if (priceSeriesRef.current) chart.removeSeries(priceSeriesRef.current);
 
-    // Memecoin prices are often well below $0.01, so the default 2-decimal
-    // axis would collapse them to "0.00". Pick a precision from the price
-    // magnitude so tiny prices show their significant digits.
-    const { precision, minMove } = priceFormatFor(candles[candles.length - 1].close);
-    candleSeriesRef.current.applyOptions({
-      priceFormat: { type: "price", precision, minMove },
-    });
+    priceSeriesRef.current =
+      chartType === "candles"
+        ? chart.addSeries(CandlestickSeries, {
+            upColor: "#16c784",
+            downColor: "#ea4b5a",
+            borderVisible: false,
+            wickUpColor: "#16c784",
+            wickDownColor: "#ea4b5a",
+          })
+        : chart.addSeries(LineSeries, { color: "#16c784", lineWidth: 2 });
+  }, [chartType]);
 
-    candleSeriesRef.current.setData(
-      candles.map((c) => ({
-        time: c.time as UTCTimestamp,
-        open: c.open,
-        high: c.high,
-        low: c.low,
-        close: c.close,
-      })),
-    );
-    volumeSeriesRef.current.setData(
+  // Push data whenever candles / mode / supply / type change.
+  useEffect(() => {
+    const priceSeries = priceSeriesRef.current;
+    const volumeSeries = volumeSeriesRef.current;
+    if (!priceSeries || !volumeSeries || candles.length === 0) return;
+
+    const mult = priceMode === "mcap" && supply > 0 ? supply : 1;
+    const last = candles[candles.length - 1].close * mult;
+    const { precision, minMove } = formatFor(last);
+    priceSeries.applyOptions({ priceFormat: { type: "price", precision, minMove } });
+
+    if (chartType === "candles") {
+      (priceSeries as ISeriesApi<"Candlestick">).setData(
+        candles.map((c) => ({
+          time: c.time as UTCTimestamp,
+          open: c.open * mult,
+          high: c.high * mult,
+          low: c.low * mult,
+          close: c.close * mult,
+        })),
+      );
+    } else {
+      (priceSeries as ISeriesApi<"Line">).setData(
+        candles.map((c) => ({ time: c.time as UTCTimestamp, value: c.close * mult })),
+      );
+    }
+
+    volumeSeries.setData(
       candles.map((c) => ({
         time: c.time as UTCTimestamp,
         value: c.volume,
@@ -100,19 +126,20 @@ export function PriceChart({ candles }: { candles: Candle[] }) {
       })),
     );
     chartRef.current?.timeScale().fitContent();
-  }, [candles]);
+  }, [candles, chartType, priceMode, supply]);
 
   return <div ref={containerRef} className="h-full w-full" />;
 }
 
-/** Choose axis decimal precision (and tick size) based on price magnitude. */
-function priceFormatFor(price: number): { precision: number; minMove: number } {
-  const p = Math.abs(price);
+/** Choose axis decimal precision (and tick size) based on value magnitude. */
+function formatFor(value: number): { precision: number; minMove: number } {
+  const v = Math.abs(value);
   let precision: number;
-  if (p >= 1) precision = 2;
-  else if (p >= 0.01) precision = 4;
-  else if (p >= 0.0001) precision = 6;
-  else if (p >= 0.000001) precision = 8;
+  if (v >= 1000) precision = 0;
+  else if (v >= 1) precision = 2;
+  else if (v >= 0.01) precision = 4;
+  else if (v >= 0.0001) precision = 6;
+  else if (v >= 0.000001) precision = 8;
   else precision = 10;
-  return { precision, minMove: 1 / 10 ** precision };
+  return { precision, minMove: precision === 0 ? 1 : 1 / 10 ** precision };
 }

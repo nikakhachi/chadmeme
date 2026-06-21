@@ -17,7 +17,10 @@ export function TokenView({ token }: { token: TokenDetail }) {
       <div className="flex min-w-0 flex-1 flex-col">
         <TokenHeader token={token} />
         <div className="h-[380px] shrink-0">
-          <ChartPanel address={token.address} />
+          <ChartPanel
+            address={token.address}
+            supply={token.supply ?? (token.priceUsd > 0 ? token.marketCap / token.priceUsd : 0)}
+          />
         </div>
         <ActivityTabs address={token.address} />
       </div>
