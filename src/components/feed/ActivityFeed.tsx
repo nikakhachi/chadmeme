@@ -77,7 +77,11 @@ function FeedRow({ activity }: { activity: FeedActivity }) {
     >
       {/* Line 1: trader + buy/sell badge + time */}
       <div className="flex items-center gap-2.5">
-        <TokenAvatar symbol={trader} logoURI={activity.traderAvatarUrl ?? undefined} size="sm" />
+        <TokenAvatar
+          symbol={trader}
+          logoURI={activity.traderAvatarUrl ?? undefined}
+          size="sm"
+        />
         <span className="truncate text-sm font-semibold text-foreground">
           {trader}
         </span>
@@ -103,15 +107,6 @@ function FeedRow({ activity }: { activity: FeedActivity }) {
         <span className="font-semibold text-foreground">
           {formatCompactUsd(activity.valueUsd)}
         </span>
-        {activity.marketCapUsd != null && (
-          <span className="text-muted">
-            at{" "}
-            <span className="text-foreground">
-              {formatCompactUsd(activity.marketCapUsd)}
-            </span>{" "}
-            MC
-          </span>
-        )}
       </div>
     </Link>
   );
