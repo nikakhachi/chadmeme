@@ -213,7 +213,15 @@ export function TradePanel({ token }: { token: TokenDetail }) {
           {formatTokenPrice(token.priceUsd)} / {token.symbol}
         </span>
         {authenticated && account && (
-          <span className="text-muted">{formatUsd(account.cashUsd)} cash</span>
+          <button
+            type="button"
+            // Click to spend the full cash balance on a buy.
+            onClick={() => setBuyUsd(String(Math.floor(account.cashUsd * 100) / 100))}
+            className="text-muted hover:text-foreground"
+            title="Use full balance"
+          >
+            {formatUsd(account.cashUsd)} cash
+          </button>
         )}
       </div>
 
