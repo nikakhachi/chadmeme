@@ -1,6 +1,7 @@
 import { TokenAvatar } from "@/components/ui/token-avatar";
 import { PriceChange } from "@/components/ui/price-change";
 import { CopyAddress } from "@/components/ui/copy-address";
+import { StarButton } from "@/components/watchlist/StarButton";
 import { formatCompactUsd, formatTokenPrice } from "@/lib/utils";
 import type { TokenDetail } from "@/types/market";
 
@@ -31,6 +32,7 @@ export function TokenHeader({ token }: { token: TokenDetail }) {
             <div className="flex items-center gap-2">
               <h1 className="text-lg font-bold">{token.symbol}</h1>
               <span className="text-sm text-muted">{token.name}</span>
+              <StarButton address={token.address} size={16} alwaysVisible />
             </div>
             <div className="flex items-center gap-2 text-xs text-muted">
               <CopyAddress address={token.address} />

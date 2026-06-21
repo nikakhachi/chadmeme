@@ -13,3 +13,15 @@ export function useTrending(limit = 50) {
   );
   return { tokens: data?.tokens ?? [], error, isLoading };
 }
+
+/** Live token data for a set of watchlisted addresses (skips when empty). */
+export function useWatchlistTokens(addresses: string[]) {
+  const key = addresses.length
+    ? `/api/tokens/batch?addresses=${addresses.join(",")}`
+    : null;
+  const { data, isLoading } = useSWR<{ tokens: Token[] }>(key, fetcher, {
+    refreshInterval: 20_000,
+    revalidateOnFocus: false,
+  });
+  return { tokens: data?.tokens ?? [], isLoading };
+}

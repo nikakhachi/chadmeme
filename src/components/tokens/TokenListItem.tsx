@@ -1,10 +1,11 @@
 import Link from "next/link";
 import { TokenAvatar } from "@/components/ui/token-avatar";
 import { PriceChange } from "@/components/ui/price-change";
+import { StarButton } from "@/components/watchlist/StarButton";
 import { cn, formatCompactUsd, formatTokenPrice } from "@/lib/utils";
 import type { Token } from "@/types/market";
 
-/** A single token row in the left sidebar list. */
+/** A single token row in the left sidebar list, with a watchlist star. */
 export function TokenListItem({
   token,
   active,
@@ -16,10 +17,11 @@ export function TokenListItem({
     <Link
       href={`/token/${token.address}`}
       className={cn(
-        "flex items-center gap-3 rounded-lg px-3 py-2.5 transition-colors",
+        "group flex items-center gap-2.5 rounded-lg px-2.5 py-2.5 transition-colors",
         active ? "bg-elevated" : "hover:bg-panel",
       )}
     >
+      <StarButton address={token.address} />
       <TokenAvatar symbol={token.symbol} logoURI={token.logoURI} />
       <div className="min-w-0 flex-1">
         <div className="truncate text-sm font-semibold text-foreground">

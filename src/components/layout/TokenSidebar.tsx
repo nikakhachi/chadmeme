@@ -1,36 +1,78 @@
-import { getTrendingTokens } from "@/lib/birdeye";
+"use client";
+import { useState } from "react";
+import { Star } from "lucide-react";
+import { useTrending, useWatchlistTokens } from "@/hooks/use-trending";
+import { useWatchlist } from "@/components/watchlist/watchlist-context";
 import { TokenList } from "./TokenList";
+import { cn } from "@/lib/utils";
 
-const FILTERS = ["Trending", "Watchlist", "Crypto", "Most held", "Graduating"];
+const TABS = ["Trending", "Watchlist"] as const;
+type Tab = (typeof TABS)[number];
 
 /**
- * Left sidebar: filter chips + scrollable trending token list.
- * Server component — fetches trending tokens on the server (real or mock).
- * The active row is highlighted client-side by TokenList from the route.
+ * Left sidebar: Trending / Watchlist tabs + the token list.
+ * Trending streams from BirdEye; Watchlist resolves live data for the tokens
+ * the user has starred (fetched only while the tab is active, to save API).
  */
-export async function TokenSidebar() {
-  const tokens = await getTrendingTokens(50);
+export function TokenSidebar() {
+  const [tab, setTab] = useState<Tab>("Trending");
+  const { addresses } = useWatchlist();
+  const isWatchlist = tab === "Watchlist";
+
+  const trending = useTrending(50);
+  const watchlist = useWatchlistTokens(isWatchlist ? addresses : []);
+
+  const tokens = isWatchlist ? watchlist.tokens : trending.tokens;
+  const loading = isWatchlist ? watchlist.isLoading : trending.isLoading;
 
   return (
     <aside className="flex h-full w-[300px] shrink-0 flex-col border-r border-line bg-canvas">
-      <div className="flex gap-1.5 overflow-x-auto px-3 py-3">
-        {FILTERS.map((filter, i) => (
+      <div className="flex gap-1.5 px-3 py-3">
+        {TABS.map((t) => (
           <button
-            key={filter}
-            className={
-              "shrink-0 rounded-full px-3 py-1 text-xs font-medium transition-colors " +
-              (i === 0
-                ? "bg-elevated text-foreground"
-                : "text-muted hover:text-foreground")
-            }
+            key={t}
+            onClick={() => setTab(t)}
+            className={cn(
+              "rounded-full px-3 py-1 text-xs font-medium transition-colors",
+              t === tab ? "bg-elevated text-foreground" : "text-muted hover:text-foreground",
+            )}
           >
-            {filter}
+            {t}
           </button>
         ))}
       </div>
+
       <div className="flex-1 overflow-y-auto px-2 pb-4">
-        <TokenList tokens={tokens} />
+        {isWatchlist && addresses.length === 0 ? (
+          <EmptyWatchlist />
+        ) : loading && tokens.length === 0 ? (
+          <ListSkeleton />
+        ) : (
+          <TokenList tokens={tokens} />
+        )}
       </div>
     </aside>
+  );
+}
+
+function EmptyWatchlist() {
+  return (
+    <div className="flex flex-col items-center gap-2 px-6 py-12 text-center text-sm text-muted">
+      <Star className="size-6 text-subtle" />
+      <p>Your watchlist is empty.</p>
+      <p className="text-xs text-subtle">
+        Tap the star on any token to add it here.
+      </p>
+    </div>
+  );
+}
+
+function ListSkeleton() {
+  return (
+    <div className="space-y-1.5 px-1 py-2">
+      {Array.from({ length: 10 }).map((_, i) => (
+        <div key={i} className="h-12 animate-pulse rounded-lg bg-panel" />
+      ))}
+    </div>
   );
 }

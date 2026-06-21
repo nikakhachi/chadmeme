@@ -119,6 +119,14 @@ export async function getTokenDetail(address: string): Promise<TokenDetail> {
   }
 }
 
+/** Fetch normalized token data for a set of addresses (e.g. the watchlist). */
+export async function getTokensByAddresses(addresses: string[]): Promise<Token[]> {
+  if (addresses.length === 0) return [];
+  const tokens = await Promise.all(addresses.map((a) => getTokenDetail(a)));
+  // Preserve the requested order; drop any that failed to resolve a symbol.
+  return tokens.filter((t) => t.address);
+}
+
 // ── OHLCV candles ────────────────────────────────────────────────────────────
 
 const INTERVAL_TO_BIRDEYE: Record<ChartInterval, string> = {
