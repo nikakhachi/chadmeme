@@ -16,10 +16,13 @@ export function PrivyAuthBridge({ children }: { children: React.ReactNode }) {
     (a) => a.type === "wallet" && "chainType" in a && a.chainType === "solana",
   ) as { address?: string } | undefined;
 
-  const handle =
-    user?.google?.name ??
-    user?.email?.address ??
-    (user?.id ? user.id.slice(-6) : "trader");
+  // Default username from the gmail/email local part (e.g. "jane.doe") for both
+  // Google and email logins; sanitized to valid username chars and ASCII-safe.
+  const email = user?.google?.email ?? user?.email?.address ?? null;
+  const fromEmail = email
+    ? email.split("@")[0].replace(/[^a-zA-Z0-9_.-]/g, "")
+    : "";
+  const handle = fromEmail.length >= 2 ? fromEmail : `trader${user?.id?.slice(-4) ?? ""}`;
 
   const value: AuthState = {
     ready,

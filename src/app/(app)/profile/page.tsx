@@ -6,6 +6,7 @@ import { NetworthChart } from "@/components/profile/NetworthChart";
 import { ActivityHistory } from "@/components/profile/ActivityHistory";
 import { PositionsList } from "@/components/profile/PositionsList";
 import { DepositCard } from "@/components/profile/DepositCard";
+import { EditableUsername } from "@/components/profile/EditableUsername";
 import { Button } from "@/components/ui/button";
 import { PriceChange } from "@/components/ui/price-change";
 import { formatUsd } from "@/lib/utils";
@@ -35,7 +36,7 @@ export default function ProfilePage() {
           {(user?.handle ?? "C").slice(0, 1).toUpperCase()}
         </span>
         <div>
-          <h1 className="text-xl font-bold">{user?.handle ?? "Trader"}</h1>
+          <EditableUsername />
           <p className="text-sm text-muted">Paper trading account</p>
         </div>
       </div>

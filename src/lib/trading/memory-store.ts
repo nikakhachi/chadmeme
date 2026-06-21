@@ -41,8 +41,18 @@ function ensure(userId: string): UserState {
 export const memoryStore: TradingStore = {
   async ensureUser(userId, info) {
     const state = ensure(userId);
-    if (info?.handle) state.handle = info.handle;
-    if (info?.walletAddress) state.walletAddress = info.walletAddress;
+    // Seed only when unset, so we never clobber an edited username.
+    if (info?.handle && !state.handle) state.handle = info.handle;
+    if (info?.walletAddress && !state.walletAddress) state.walletAddress = info.walletAddress;
+  },
+
+  async getProfile(userId) {
+    const state = ensure(userId);
+    return { handle: state.handle, walletAddress: state.walletAddress };
+  },
+
+  async updateUsername(userId, handle) {
+    ensure(userId).handle = handle;
   },
 
   async getRecentTrades(limit, offset) {

@@ -118,6 +118,19 @@ export async function getFeed(limit: number, offset: number): Promise<FeedActivi
   return getStore().getRecentTrades(limit, offset);
 }
 
+/** Read the user's profile, seeding defaults (gmail-derived) on first access. */
+export async function getOrInitProfile(userId: string, defaults: UserInfo) {
+  const store = getStore();
+  await store.ensureUser(userId, defaults);
+  return store.getProfile(userId);
+}
+
+/** Update the user's username (profile edit). */
+export async function setUsername(userId: string, handle: string): Promise<void> {
+  await getStore().ensureUser(userId);
+  await getStore().updateUsername(userId, handle);
+}
+
 export async function getNetworth(userId: string): Promise<NetworthPoint[]> {
   return getStore().getNetworthSeries(userId);
 }
