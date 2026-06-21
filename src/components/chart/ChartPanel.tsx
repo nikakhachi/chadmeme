@@ -1,8 +1,9 @@
 "use client";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { CandlestickChart, LineChart } from "lucide-react";
-import { PriceChart, type ChartType, type PriceMode } from "./PriceChart";
+import { PriceChart, type ChartType, type PriceMode, type TradeMarker } from "./PriceChart";
 import { useOHLCV } from "@/hooks/use-token-data";
+import { useActivity } from "@/hooks/use-profile-data";
 import { cn } from "@/lib/utils";
 import type { ChartInterval } from "@/types/market";
 
@@ -14,6 +15,19 @@ export function ChartPanel({ address, supply }: { address: string; supply: numbe
   const [priceMode, setPriceMode] = useState<PriceMode>("price");
   const [chartType, setChartType] = useState<ChartType>("candles");
   const { candles, isLoading } = useOHLCV(address, interval);
+
+  // Mark the signed-in user's own buys/sells for this token on the chart.
+  const { trades } = useActivity();
+  const markers = useMemo<TradeMarker[]>(
+    () =>
+      trades
+        .filter((t) => t.tokenAddress === address)
+        .map((t) => ({
+          time: Math.floor(new Date(t.createdAt).getTime() / 1000),
+          side: t.side,
+        })),
+    [trades, address],
+  );
 
   return (
     <div className="flex h-full flex-col">
@@ -67,6 +81,7 @@ export function ChartPanel({ address, supply }: { address: string; supply: numbe
           chartType={chartType}
           priceMode={priceMode}
           supply={supply}
+          markers={markers}
         />
       </div>
     </div>

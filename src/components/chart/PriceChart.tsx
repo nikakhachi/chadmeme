@@ -2,18 +2,28 @@
 import { useEffect, useRef } from "react";
 import {
   createChart,
+  createSeriesMarkers,
   CandlestickSeries,
   LineSeries,
   HistogramSeries,
   type IChartApi,
   type ISeriesApi,
+  type ISeriesMarkersPluginApi,
+  type SeriesMarker,
+  type Time,
   type UTCTimestamp,
 } from "lightweight-charts";
-import type { Candle } from "@/types/market";
+import type { Candle, TradeSide } from "@/types/market";
 import { formatChartUsd } from "@/lib/utils";
 
 export type ChartType = "candles" | "line";
 export type PriceMode = "price" | "mcap";
+
+/** A user's own trade to mark on the chart (unix-seconds time). */
+export interface TradeMarker {
+  time: number;
+  side: TradeSide;
+}
 
 /**
  * TradingView Lightweight Charts panel. Supports candle/line series and a
@@ -27,16 +37,20 @@ export function PriceChart({
   chartType,
   priceMode,
   supply,
+  markers = [],
 }: {
   candles: Candle[];
   chartType: ChartType;
   priceMode: PriceMode;
   supply: number;
+  /** The current user's buy/sell trades for this token. */
+  markers?: TradeMarker[];
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<IChartApi | null>(null);
   const priceSeriesRef = useRef<ISeriesApi<"Candlestick"> | ISeriesApi<"Line"> | null>(null);
   const volumeSeriesRef = useRef<ISeriesApi<"Histogram"> | null>(null);
+  const markersRef = useRef<ISeriesMarkersPluginApi<Time> | null>(null);
 
   // Create the chart + volume series once.
   useEffect(() => {
@@ -92,7 +106,25 @@ export function PriceChart({
             wickDownColor: "#ea4b5a",
           })
         : chart.addSeries(LineSeries, { color: "#16c784", lineWidth: 2 });
+
+    // Markers attach to a series, so (re)create the plugin with it.
+    markersRef.current = createSeriesMarkers(priceSeriesRef.current, []);
   }, [chartType]);
+
+  // Draw the user's buy/sell markers (recreated with the series above).
+  useEffect(() => {
+    if (!markersRef.current) return;
+    const data: SeriesMarker<Time>[] = markers
+      .map((m) => ({
+        time: m.time as UTCTimestamp,
+        position: m.side === "buy" ? ("belowBar" as const) : ("aboveBar" as const),
+        color: m.side === "buy" ? "#16c784" : "#ea4b5a",
+        shape: m.side === "buy" ? ("arrowUp" as const) : ("arrowDown" as const),
+        text: m.side === "buy" ? "B" : "S",
+      }))
+      .sort((a, b) => (a.time as number) - (b.time as number));
+    markersRef.current.setMarkers(data);
+  }, [markers, chartType]);
 
   // Push data whenever candles / mode / supply / type change.
   useEffect(() => {
