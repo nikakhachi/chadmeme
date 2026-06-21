@@ -14,6 +14,12 @@ export async function GET(
   const intervalParam = searchParams.get("interval") as ChartInterval | null;
   const interval = intervalParam && INTERVALS.includes(intervalParam) ? intervalParam : "15m";
 
-  const candles = await getOHLCV(address, interval);
-  return NextResponse.json({ candles });
+  try {
+    const candles = await getOHLCV(address, interval);
+    return NextResponse.json({ candles });
+  } catch {
+    // Upstream failure (e.g. rate limit) — signal it so the client retries
+    // rather than caching an empty chart as a successful "no data" result.
+    return NextResponse.json({ error: "Failed to load chart data" }, { status: 502 });
+  }
 }

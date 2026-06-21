@@ -15,7 +15,7 @@ export function ChartPanel({ address, supply }: { address: string; supply: numbe
   const [interval, setInterval] = useState<ChartInterval>("1m");
   const [priceMode, setPriceMode] = useState<PriceMode>("price");
   const [chartType, setChartType] = useState<ChartType>("candles");
-  const { candles, isLoading } = useOHLCV(address, interval);
+  const { candles, isLoading, isValidating, error } = useOHLCV(address, interval);
 
   // Mark the signed-in user's own buys/sells for this token on the chart.
   const { items } = useActivity();
@@ -74,7 +74,9 @@ export function ChartPanel({ address, supply }: { address: string; supply: numbe
       <div className="relative min-h-0 flex-1">
         {candles.length === 0 && (
           <div className="absolute inset-0 z-10 grid place-items-center">
-            {isLoading ? (
+            {/* Still fetching or retrying a failed/rate-limited request — keep
+                the spinner so a transient failure isn't shown as "no data". */}
+            {isLoading || isValidating || error ? (
               <Spinner className="size-7" />
             ) : (
               <span className="text-sm text-muted">No chart data available.</span>

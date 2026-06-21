@@ -173,33 +173,33 @@ export async function getOHLCV(
   interval: ChartInterval = "15m",
   count = 150,
 ): Promise<Candle[]> {
-  try {
-    const now = Math.floor(Date.now() / 1000);
-    const from = now - INTERVAL_SECONDS[interval] * count;
-    const data = await birdeyeGet<{ items?: Record<string, unknown>[] }>("/defi/ohlcv", {
-      params: {
-        address,
-        type: INTERVAL_TO_BIRDEYE[interval],
-        time_from: from,
-        time_to: now,
-        currency: "usd",
-      },
-      revalidateSeconds: 15,
-    });
-    const candles = (data.items ?? []).map(
-      (it): Candle => ({
-        time: num(pick(it, "unixTime", "time")),
-        open: num(pick(it, "o", "open")),
-        high: num(pick(it, "h", "high")),
-        low: num(pick(it, "l", "low")),
-        close: num(pick(it, "c", "close")),
-        volume: num(pick(it, "v", "volume")),
-      }),
-    );
-    return fillCandleGaps(candles, INTERVAL_SECONDS[interval]);
-  } catch {
-    return [];
-  }
+  // Note: we intentionally let BirdeyeError propagate. A transient failure
+  // (e.g. rate limit) must surface as an error so the caller can retry — if we
+  // swallowed it to [], it would be indistinguishable from a token that simply
+  // has no candles, and the chart would stay blank until a remount.
+  const now = Math.floor(Date.now() / 1000);
+  const from = now - INTERVAL_SECONDS[interval] * count;
+  const data = await birdeyeGet<{ items?: Record<string, unknown>[] }>("/defi/ohlcv", {
+    params: {
+      address,
+      type: INTERVAL_TO_BIRDEYE[interval],
+      time_from: from,
+      time_to: now,
+      currency: "usd",
+    },
+    revalidateSeconds: 15,
+  });
+  const candles = (data.items ?? []).map(
+    (it): Candle => ({
+      time: num(pick(it, "unixTime", "time")),
+      open: num(pick(it, "o", "open")),
+      high: num(pick(it, "h", "high")),
+      low: num(pick(it, "l", "low")),
+      close: num(pick(it, "c", "close")),
+      volume: num(pick(it, "v", "volume")),
+    }),
+  );
+  return fillCandleGaps(candles, INTERVAL_SECONDS[interval]);
 }
 
 /**

@@ -2,16 +2,22 @@
 import useSWR from "swr";
 import type { Candle, ChartInterval, Holder, MarketTrade } from "@/types/market";
 
-const fetcher = (url: string) => fetch(url).then((r) => r.json());
+// Throw on a non-OK response so SWR treats it as an error and retries with
+// backoff — otherwise a transient 5xx would be cached as a successful result.
+const fetcher = async (url: string) => {
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`Request failed (${res.status})`);
+  return res.json();
+};
 
 /** Live OHLCV candles for a token at the chosen interval. */
 export function useOHLCV(address: string, interval: ChartInterval) {
-  const { data, isLoading } = useSWR<{ candles: Candle[] }>(
+  const { data, isLoading, isValidating, error } = useSWR<{ candles: Candle[] }>(
     `/api/tokens/${address}/ohlcv?interval=${interval}`,
     fetcher,
     { refreshInterval: 15_000, revalidateOnFocus: false },
   );
-  return { candles: data?.candles ?? [], isLoading };
+  return { candles: data?.candles ?? [], isLoading, isValidating, error };
 }
 
 /** Live trade feed for a token, polled frequently. */
