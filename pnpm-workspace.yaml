@@ -1,9 +1,10 @@
 # pnpm 11 requires an explicit allow/deny decision for each dependency that has
 # a native build (install/postinstall) script. `true` = allowed to build.
 allowBuilds:
-  '@reown/appkit': true   # pulled in by Privy wallet stack
-  bufferutil: true        # ws performance addon
-  keccak: true            # hashing for wallet/crypto
-  sharp: true             # next/image optimization
-  unrs-resolver: true     # eslint native module resolver
-  utf-8-validate: true    # ws performance addon
+  '@reown/appkit': true # pulled in by Privy wallet stack
+  bigint-buffer: false # optional perf addon; JS fallback is fine
+  bufferutil: true # ws performance addon
+  keccak: true # hashing for wallet/crypto
+  sharp: true # next/image optimization
+  unrs-resolver: true # eslint native module resolver
+  utf-8-validate: true # ws performance addon
