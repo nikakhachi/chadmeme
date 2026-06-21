@@ -77,7 +77,7 @@ function FeedRow({ activity }: { activity: FeedActivity }) {
     >
       {/* Line 1: trader + buy/sell badge + time */}
       <div className="flex items-center gap-2.5">
-        <TokenAvatar symbol={trader} size="sm" />
+        <TokenAvatar symbol={trader} logoURI={activity.traderAvatarUrl ?? undefined} size="sm" />
         <span className="truncate text-sm font-semibold text-foreground">
           {trader}
         </span>

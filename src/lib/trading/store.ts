@@ -30,10 +30,16 @@ export interface TradingStore {
   /** Ensure a user row exists. Seeds handle/wallet on creation only — never
    *  overwrites an existing (possibly user-edited) value. */
   ensureUser(userId: string, info?: UserInfo): Promise<void>;
-  /** Read a user's profile (username + wallet). */
-  getProfile(userId: string): Promise<{ handle: string | null; walletAddress: string | null }>;
+  /** Read a user's profile (username + wallet + avatar). */
+  getProfile(userId: string): Promise<{
+    handle: string | null;
+    walletAddress: string | null;
+    avatarUrl: string | null;
+  }>;
   /** Explicitly set a user's username (profile edit). */
   updateUsername(userId: string, handle: string): Promise<void>;
+  /** Set a user's avatar URL (after an upload). */
+  updateAvatar(userId: string, avatarUrl: string): Promise<void>;
   getCash(userId: string): Promise<number>;
   getPositions(userId: string): Promise<Position[]>;
   getPosition(userId: string, tokenAddress: string): Promise<Position | null>;

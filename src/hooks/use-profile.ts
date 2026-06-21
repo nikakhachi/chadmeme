@@ -5,11 +5,13 @@ import { useAuth } from "@/components/auth/auth-context";
 interface Profile {
   handle: string | null;
   walletAddress: string | null;
+  avatarUrl: string | null;
+  storageEnabled: boolean;
 }
 
 /**
- * The signed-in user's editable profile (username). Seeds the gmail-derived
- * default on first load, and exposes `save` to update it.
+ * The signed-in user's editable profile (username + avatar). Seeds the gmail
+ * default username on first load, and exposes `save` / `uploadAvatar`.
  */
 export function useProfile() {
   const { user, walletAddress } = useAuth();
@@ -37,9 +39,29 @@ export function useProfile() {
     });
     const json = await res.json();
     if (!res.ok) return json.error ?? "Could not save";
-    await mutate({ handle: json.handle, walletAddress: data?.walletAddress ?? null }, false);
-    return null; // success
+    await mutate((cur) => (cur ? { ...cur, handle: json.handle } : cur), false);
+    return null;
   }
 
-  return { username, save };
+  async function uploadAvatar(file: File): Promise<string | null> {
+    const body = new FormData();
+    body.append("file", file);
+    const res = await fetch("/api/account/avatar", {
+      method: "POST",
+      headers: { "x-cw-user": userId! },
+      body,
+    });
+    const json = await res.json();
+    if (!res.ok) return json.error ?? "Upload failed";
+    await mutate((cur) => (cur ? { ...cur, avatarUrl: json.avatarUrl } : cur), false);
+    return null;
+  }
+
+  return {
+    username,
+    avatarUrl: data?.avatarUrl ?? null,
+    storageEnabled: data?.storageEnabled ?? false,
+    save,
+    uploadAvatar,
+  };
 }

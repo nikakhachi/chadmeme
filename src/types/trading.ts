@@ -56,6 +56,7 @@ export interface FeedActivity {
   traderId: string;
   traderHandle: string | null;
   traderWallet: string | null;
+  traderAvatarUrl: string | null;
   tokenAddress: string;
   tokenSymbol: string;
   side: TradeSide;

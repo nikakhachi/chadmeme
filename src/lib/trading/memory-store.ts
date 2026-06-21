@@ -13,6 +13,7 @@ interface UserState {
   cashUsd: number;
   handle: string | null;
   walletAddress: string | null;
+  avatarUrl: string | null;
   positions: Map<string, Position>;
   trades: TradeRecord[];
   networth: NetworthPoint[];
@@ -27,6 +28,7 @@ function ensure(userId: string): UserState {
       cashUsd: STARTING_CASH_USD,
       handle: null,
       walletAddress: null,
+      avatarUrl: null,
       positions: new Map(),
       trades: [],
       networth: [
@@ -48,11 +50,19 @@ export const memoryStore: TradingStore = {
 
   async getProfile(userId) {
     const state = ensure(userId);
-    return { handle: state.handle, walletAddress: state.walletAddress };
+    return {
+      handle: state.handle,
+      walletAddress: state.walletAddress,
+      avatarUrl: state.avatarUrl,
+    };
   },
 
   async updateUsername(userId, handle) {
     ensure(userId).handle = handle;
+  },
+
+  async updateAvatar(userId, avatarUrl) {
+    ensure(userId).avatarUrl = avatarUrl;
   },
 
   async getRecentTrades(limit, offset) {
@@ -64,6 +74,7 @@ export const memoryStore: TradingStore = {
           traderId: userId,
           traderHandle: state.handle,
           traderWallet: state.walletAddress,
+          traderAvatarUrl: state.avatarUrl,
           tokenAddress: t.tokenAddress,
           tokenSymbol: t.tokenSymbol,
           side: t.side,

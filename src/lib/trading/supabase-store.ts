@@ -46,12 +46,13 @@ export const supabaseStore: TradingStore = {
     const db = getSupabaseAdmin();
     const { data } = await db
       .from("users")
-      .select("handle, wallet_address")
+      .select("handle, wallet_address, avatar_url")
       .eq("id", userId)
       .maybeSingle();
     return {
       handle: (data?.handle as string) ?? null,
       walletAddress: (data?.wallet_address as string) ?? null,
+      avatarUrl: (data?.avatar_url as string) ?? null,
     };
   },
 
@@ -60,20 +61,30 @@ export const supabaseStore: TradingStore = {
     await db.from("users").update({ handle }).eq("id", userId);
   },
 
+  async updateAvatar(userId, avatarUrl) {
+    const db = getSupabaseAdmin();
+    await db.from("users").update({ avatar_url: avatarUrl }).eq("id", userId);
+  },
+
   async getRecentTrades(limit, offset) {
     const db = getSupabaseAdmin();
     const { data } = await db
       .from("trades")
-      .select("*, users(handle, wallet_address)")
+      .select("*, users(handle, wallet_address, avatar_url)")
       .order("created_at", { ascending: false })
       .range(offset, offset + limit - 1);
     return (data ?? []).map((row): FeedActivity => {
-      const user = (row.users ?? {}) as { handle?: string; wallet_address?: string };
+      const user = (row.users ?? {}) as {
+        handle?: string;
+        wallet_address?: string;
+        avatar_url?: string;
+      };
       return {
         id: String(row.id),
         traderId: String(row.user_id),
         traderHandle: user.handle ?? null,
         traderWallet: user.wallet_address ?? null,
+        traderAvatarUrl: user.avatar_url ?? null,
         tokenAddress: String(row.token_address),
         tokenSymbol: String(row.token_symbol),
         side: row.side as FeedActivity["side"],

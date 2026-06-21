@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getUserId } from "@/lib/auth/identify";
+import { features } from "@/lib/env";
 import { getOrInitProfile, setUsername } from "@/lib/trading/service";
 
 /**
@@ -16,7 +17,7 @@ export async function GET(request: Request) {
     handle: request.headers.get("x-cw-handle") || undefined,
     walletAddress: request.headers.get("x-cw-wallet") || undefined,
   });
-  return NextResponse.json(profile);
+  return NextResponse.json({ ...profile, storageEnabled: features.hasStorage });
 }
 
 const bodySchema = z.object({

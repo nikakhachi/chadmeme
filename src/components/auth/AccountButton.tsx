@@ -4,13 +4,16 @@ import Link from "next/link";
 import { User, LogOut, ChevronDown } from "lucide-react";
 import { useAuth } from "./auth-context";
 import { Button } from "@/components/ui/button";
+import { TokenAvatar } from "@/components/ui/token-avatar";
 import { useAccount } from "@/hooks/use-account";
+import { useProfile } from "@/hooks/use-profile";
 import { formatUsd } from "@/lib/utils";
 
 /** Top-bar account control: log in, or balance + menu when authenticated. */
 export function AccountButton() {
-  const { ready, authenticated, user, login, logout } = useAuth();
+  const { ready, authenticated, login, logout } = useAuth();
   const { account } = useAccount(authenticated);
+  const { username, avatarUrl } = useProfile();
   const [menuOpen, setMenuOpen] = useState(false);
 
   if (!ready) {
@@ -38,9 +41,12 @@ export function AccountButton() {
         onBlur={() => setTimeout(() => setMenuOpen(false), 150)}
         className="flex items-center gap-1.5 rounded-full bg-elevated p-1 pr-2"
       >
-        <span className="grid size-8 place-items-center rounded-full bg-brand text-sm font-bold text-brand-foreground">
-          {(user?.handle ?? "C").slice(0, 1).toUpperCase()}
-        </span>
+        <TokenAvatar
+          symbol={username}
+          logoURI={avatarUrl ?? undefined}
+          size="sm"
+          className="size-8"
+        />
         <ChevronDown className="size-4 text-muted" />
       </button>
 

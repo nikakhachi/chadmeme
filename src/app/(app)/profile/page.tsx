@@ -7,13 +7,14 @@ import { ActivityHistory } from "@/components/profile/ActivityHistory";
 import { PositionsList } from "@/components/profile/PositionsList";
 import { DepositCard } from "@/components/profile/DepositCard";
 import { EditableUsername } from "@/components/profile/EditableUsername";
+import { AvatarUploader } from "@/components/profile/AvatarUploader";
 import { Button } from "@/components/ui/button";
 import { PriceChange } from "@/components/ui/price-change";
 import { formatUsd } from "@/lib/utils";
 
 /** User profile: net-worth chart, holdings, activity history, and deposits. */
 export default function ProfilePage() {
-  const { ready, authenticated, user, login } = useAuth();
+  const { ready, authenticated, login } = useAuth();
   const { account, positions } = useAccount(authenticated);
   const { points } = useNetworth();
 
@@ -40,9 +41,7 @@ export default function ProfilePage() {
     <div className="mx-auto max-w-5xl p-4 lg:p-6">
       {/* Header */}
       <div className="mb-6 flex items-center gap-4">
-        <span className="grid size-14 place-items-center rounded-full bg-brand text-xl font-bold text-brand-foreground">
-          {(user?.handle ?? "C").slice(0, 1).toUpperCase()}
-        </span>
+        <AvatarUploader />
         <div>
           <EditableUsername />
           <p className="text-sm text-muted">Paper trading account</p>

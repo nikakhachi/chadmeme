@@ -131,6 +131,12 @@ export async function setUsername(userId: string, handle: string): Promise<void>
   await getStore().updateUsername(userId, handle);
 }
 
+/** Set the user's avatar URL after a successful upload. */
+export async function setAvatar(userId: string, avatarUrl: string): Promise<void> {
+  await getStore().ensureUser(userId);
+  await getStore().updateAvatar(userId, avatarUrl);
+}
+
 export async function getNetworth(userId: string): Promise<NetworthPoint[]> {
   return getStore().getNetworthSeries(userId);
 }
