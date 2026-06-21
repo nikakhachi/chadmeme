@@ -101,7 +101,11 @@ function FeedRow({ activity }: { activity: FeedActivity }) {
 
       {/* Line 2: token + value at market cap */}
       <div className="mt-1.5 flex items-center gap-2 pl-[46px] text-sm">
-        <TokenAvatar symbol={activity.tokenSymbol} size="sm" />
+        <TokenAvatar
+          symbol={activity.tokenSymbol}
+          logoURI={activity.tokenLogoURI ?? undefined}
+          size="sm"
+        />
         <span className="font-semibold text-foreground">
           {activity.tokenSymbol}
         </span>

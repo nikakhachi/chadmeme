@@ -3,7 +3,7 @@ import { ArrowDownToLine, ArrowUpFromLine } from "lucide-react";
 import { useActivity } from "@/hooks/use-profile-data";
 import { TokenAvatar } from "@/components/ui/token-avatar";
 import { AssetIcon } from "@/components/ui/asset-icon";
-import { cn, formatUsd, timeAgo } from "@/lib/utils";
+import { cn, formatCompactUsd, formatTokenPrice, formatUsd, timeAgo } from "@/lib/utils";
 import type { ActivityItem } from "@/types/trading";
 
 /** Unified activity: swaps + deposits + withdrawals. */
@@ -31,7 +31,11 @@ export function ActivityHistory() {
 function TradeRow({ item }: { item: Extract<ActivityItem, { type: "trade" }> }) {
   return (
     <>
-      <TokenAvatar symbol={item.tokenSymbol} size="sm" />
+      <TokenAvatar
+        symbol={item.tokenSymbol}
+        logoURI={item.tokenLogoURI ?? undefined}
+        size="sm"
+      />
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-1.5 text-sm font-semibold">
           <span className={cn("capitalize", item.side === "buy" ? "text-up" : "text-down")}>
@@ -46,7 +50,14 @@ function TradeRow({ item }: { item: Extract<ActivityItem, { type: "trade" }> }) 
             </span>
           )}
         </div>
-        <div className="text-xs text-muted">{timeAgo(new Date(item.createdAt))} ago</div>
+        {/* Price + market cap at the time of the trade */}
+        <div className="text-xs text-muted">
+          {formatTokenPrice(item.priceUsd)}
+          {item.marketCapUsd != null && item.marketCapUsd > 0 && (
+            <> · {formatCompactUsd(item.marketCapUsd)} MC</>
+          )}{" "}
+          · {timeAgo(new Date(item.createdAt))} ago
+        </div>
       </div>
       <div className="text-right">
         <div className="text-sm font-semibold">{formatUsd(item.valueUsd)}</div>

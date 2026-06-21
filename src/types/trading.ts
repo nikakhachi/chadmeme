@@ -40,6 +40,7 @@ export interface TradeRecord {
   userId: string;
   tokenAddress: string;
   tokenSymbol: string;
+  tokenLogoURI?: string | null;
   side: TradeSide;
   tokenAmount: number;
   priceUsd: number;
@@ -61,6 +62,7 @@ export interface FeedActivity {
   traderAvatarUrl: string | null;
   tokenAddress: string;
   tokenSymbol: string;
+  tokenLogoURI: string | null;
   side: TradeSide;
   tokenAmount: number;
   valueUsd: number;
