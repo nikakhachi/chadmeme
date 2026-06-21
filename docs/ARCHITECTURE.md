@@ -1,6 +1,6 @@
 # Architecture
 
-How ChadWallet is put together, and why. Pairs with `CLAUDE.md` (conventions).
+How ChadMeme is put together, and why. Pairs with `CLAUDE.md` (conventions).
 
 ## High-level flow
 

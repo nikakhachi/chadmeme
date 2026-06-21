@@ -1,17 +1,15 @@
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 
-/** Wordmark. Lowercase, tight — trading-app vibe. */
+/** Brand mark: logo image + lowercase wordmark. */
 export function Logo({ className }: { className?: string }) {
   return (
-    <Link
-      href="/"
-      className={cn(
-        "text-xl font-extrabold tracking-tight text-foreground",
-        className,
-      )}
-    >
-      chad<span className="text-brand">meme</span>
+    <Link href="/" className={cn("flex items-center gap-2", className)}>
+      {/* eslint-disable-next-line @next/next/no-img-element -- small static brand asset */}
+      <img src="/logo.png" alt="ChadMeme" className="size-7 shrink-0" />
+      <span className="text-xl font-extrabold tracking-tight text-foreground">
+        chad<span className="text-brand">meme</span>
+      </span>
     </Link>
   );
 }

@@ -1,4 +1,4 @@
-# ChadWallet — Engineering Guide
+# ChadMeme — Engineering Guide
 
 A fomo.family-style memecoin trading app for **Solana**. Real market data, paper
 trading (virtual cash over live prices), Google/Apple sign-in, net-worth + activity.

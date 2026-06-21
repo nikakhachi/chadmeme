@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 /*
-  ChadWallet design tokens (dark-only), matched to chadwallet.xyz.
+  ChadMeme design tokens (dark-only), matched to chadwallet.xyz.
   Use semantic Tailwind classes everywhere instead of raw hex:
     bg-canvas / bg-panel / bg-elevated   surfaces
     border-line                          hairline borders
