@@ -57,7 +57,10 @@ export function TradePanel({ token }: { token: TokenDetail }) {
     maxAmount > 0 ? Math.min(100, Math.round((amt / maxAmount) * 100)) : 0;
 
   function setPercent(pct: number) {
-    setAmount(String(Number(((maxAmount * pct) / 100).toFixed(6))));
+    // Floor to 6 decimals so 100% never rounds ABOVE the balance (which would
+    // exceed it and disable the button). The relayer sponsors gas on top, so
+    // spending the full balance is fine.
+    setAmount(String(Math.floor(((maxAmount * pct) / 100) * 1e6) / 1e6));
   }
 
   async function submit() {
@@ -80,7 +83,7 @@ export function TradePanel({ token }: { token: TokenDetail }) {
   const canSubmit =
     !pending &&
     amt > 0 &&
-    (side === "buy" ? amt <= payBalance : holding > 0 && amt <= holding + 1e-9);
+    (side === "buy" ? amt <= payBalance + 1e-9 : holding > 0 && amt <= holding + 1e-9);
 
   return (
     <div className="rounded-xl border border-line bg-panel p-3">
