@@ -2,14 +2,13 @@ import { NextResponse } from "next/server";
 import { getFeed } from "@/lib/trading/service";
 
 /**
- * GET /api/feed?limit=10&offset=0 — global activity feed (all traders).
- * Returns `activities` plus `hasMore` to drive infinite scroll.
+ * GET /api/feed?limit=500 — global activity feed (all traders), newest first.
+ * The client fetches the whole feed in one request (assessment-scale data).
  */
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
-  const limit = Math.min(Number(searchParams.get("limit")) || 10, 50);
-  const offset = Math.max(Number(searchParams.get("offset")) || 0, 0);
+  const limit = Math.min(Number(searchParams.get("limit")) || 500, 1000);
 
-  const activities = await getFeed(limit, offset);
-  return NextResponse.json({ activities, hasMore: activities.length === limit });
+  const activities = await getFeed(limit, 0);
+  return NextResponse.json({ activities });
 }

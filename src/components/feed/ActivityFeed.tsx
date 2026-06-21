@@ -1,5 +1,4 @@
 "use client";
-import { useEffect, useRef } from "react";
 import Link from "next/link";
 import { useFeed } from "@/hooks/use-feed";
 import { TokenAvatar } from "@/components/ui/token-avatar";
@@ -7,24 +6,9 @@ import { AssetIcon } from "@/components/ui/asset-icon";
 import { cn, formatCompactUsd, shortenAddress, timeAgo } from "@/lib/utils";
 import type { FeedActivity } from "@/types/trading";
 
-/** Global activity feed of every trader's buys/sells, with infinite scroll. */
+/** Global activity feed of every trader's buys/sells (full list, auto-refreshed). */
 export function ActivityFeed() {
-  const { activities, hasMore, isLoading, isLoadingMore, loadMore } = useFeed();
-  const sentinelRef = useRef<HTMLDivElement>(null);
-
-  // Load the next page when the sentinel scrolls into view.
-  useEffect(() => {
-    const el = sentinelRef.current;
-    if (!el || !hasMore) return;
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting) loadMore();
-      },
-      { rootMargin: "120px" },
-    );
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, [hasMore, loadMore]);
+  const { activities, isLoading } = useFeed();
 
   if (isLoading && activities.length === 0) {
     return (
@@ -49,16 +33,6 @@ export function ActivityFeed() {
       {activities.map((a) => (
         <FeedRow key={a.id} activity={a} />
       ))}
-      <div ref={sentinelRef} className="h-8">
-        {isLoadingMore && (
-          <p className="py-2 text-center text-xs text-subtle">Loading…</p>
-        )}
-        {!hasMore && (
-          <p className="py-2 text-center text-xs text-subtle">
-            You&apos;re all caught up.
-          </p>
-        )}
-      </div>
     </div>
   );
 }
