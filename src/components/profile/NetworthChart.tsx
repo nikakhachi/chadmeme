@@ -8,6 +8,7 @@ import {
   type UTCTimestamp,
 } from "lightweight-charts";
 import type { NetworthPoint } from "@/types/trading";
+import { formatChartUsd } from "@/lib/utils";
 
 /** Account net-worth over time, rendered as a smooth area chart. */
 export function NetworthChart({ points }: { points: NetworthPoint[] }) {
@@ -20,7 +21,8 @@ export function NetworthChart({ points }: { points: NetworthPoint[] }) {
     if (!container) return;
 
     const chart = createChart(container, {
-      layout: { background: { color: "transparent" }, textColor: "#94a3b8", fontFamily: "var(--font-sans)" },
+      layout: { background: { color: "transparent" }, textColor: "#94a3b8", fontFamily: "var(--font-sans)", fontSize: 13 },
+      localization: { priceFormatter: formatChartUsd },
       grid: { vertLines: { visible: false }, horzLines: { color: "rgba(30,41,59,0.5)" } },
       rightPriceScale: { borderVisible: false },
       timeScale: { borderVisible: false, timeVisible: true },

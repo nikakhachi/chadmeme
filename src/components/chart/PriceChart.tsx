@@ -67,6 +67,7 @@ export function PriceChart({
         background: { color: "transparent" },
         textColor: "#94a3b8",
         fontFamily: "var(--font-sans)",
+        fontSize: 13,
       },
       // Group thousands + compact millions on the price axis & crosshair.
       localization: { priceFormatter: formatChartUsd },
