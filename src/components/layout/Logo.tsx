@@ -11,7 +11,7 @@ export function Logo({ className }: { className?: string }) {
         className,
       )}
     >
-      chad<span className="text-brand">wallet</span>
+      chad<span className="text-brand">meme</span>
     </Link>
   );
 }
