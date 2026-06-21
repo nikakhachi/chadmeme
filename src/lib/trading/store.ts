@@ -3,7 +3,6 @@ import { features } from "@/lib/env";
 import type {
   FeedActivity,
   NetworthPoint,
-  Position,
   TradeRecord,
   TransferRecord,
 } from "@/types/trading";
@@ -46,22 +45,11 @@ export interface TradingStore {
   updateUsername(userId: string, handle: string): Promise<void>;
   /** Set a user's avatar URL (after an upload). */
   updateAvatar(userId: string, avatarUrl: string): Promise<void>;
-  getCash(userId: string): Promise<number>;
-  getPositions(userId: string): Promise<Position[]>;
-  getPosition(userId: string, tokenAddress: string): Promise<Position | null>;
   getTrades(userId: string, limit?: number): Promise<TradeRecord[]>;
   getNetworthSeries(userId: string): Promise<NetworthPoint[]>;
   /** Recent trades across ALL users (global activity feed), newest first. */
   getRecentTrades(limit: number, offset: number): Promise<FeedActivity[]>;
-  /** Persist a fill: update cash + position and append a trade row. */
-  recordTrade(args: {
-    userId: string;
-    token: TradeToken;
-    side: TradeSide;
-    tokenAmount: number;
-    priceUsd: number;
-  }): Promise<TradeRecord>;
-  /** Append a row for a REAL executed on-chain swap (no cash/position math). */
+  /** Append a row for a REAL executed on-chain swap. */
   logTrade(args: {
     userId: string;
     token: TradeToken;

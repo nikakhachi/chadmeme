@@ -146,56 +146,6 @@ function computeAvgEntries(trades: TradeRecord[]): Map<string, number> {
   return out;
 }
 
-export interface ExecuteTradeInput {
-  token: TradeToken;
-  side: TradeSide;
-  /** For buys: spend this much USD. */
-  usdAmount?: number;
-  /** For sells: an exact token quantity. Capped to holdings. */
-  tokenAmount?: number;
-  /** For sells: sell this fraction of holdings (0–1). */
-  sellFraction?: number;
-  /** Trader profile, captured for the activity feed. */
-  trader?: UserInfo;
-}
-
-export async function executeTrade(
-  userId: string,
-  input: ExecuteTradeInput,
-): Promise<TradeRecord> {
-  const store = getStore();
-  await store.ensureUser(userId, input.trader);
-
-  const priceUsd = await getPrice(input.token.address);
-  if (priceUsd <= 0) throw new Error("Could not fetch a live price for this token.");
-
-  let tokenAmount: number;
-  if (input.side === "sell") {
-    const position = await store.getPosition(userId, input.token.address);
-    const held = position?.amount ?? 0;
-    const requested =
-      input.sellFraction !== undefined
-        ? held * input.sellFraction
-        : (input.tokenAmount ?? 0);
-    // Cap to holdings so "sell ~$100" / "100%" never over-sells on rounding.
-    tokenAmount = Math.min(requested, held);
-  } else {
-    const usd = input.usdAmount ?? 0;
-    tokenAmount = usd / priceUsd;
-  }
-
-  const trade = await store.recordTrade({
-    userId,
-    token: input.token,
-    side: input.side,
-    tokenAmount,
-    priceUsd,
-  });
-
-  // NOTE: paper-trading path — replaced by real on-chain swaps in Phase B.
-  return trade;
-}
-
 export interface RecordTradeInput {
   signedTransaction: string; // base64
   token: TradeToken;

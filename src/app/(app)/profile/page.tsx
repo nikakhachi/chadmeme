@@ -64,7 +64,7 @@ export default function ProfilePage() {
           <AvatarUploader />
           <div>
             <EditableUsername />
-            <p className="text-sm text-muted">Paper trading account</p>
+            <p className="text-sm text-muted">Trading on Solana</p>
           </div>
         </div>
         <div className="flex flex-wrap gap-2">
