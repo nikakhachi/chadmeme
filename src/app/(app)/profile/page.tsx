@@ -8,6 +8,7 @@ import { PositionsList } from "@/components/profile/PositionsList";
 import { DepositCard } from "@/components/profile/DepositCard";
 import { EditableUsername } from "@/components/profile/EditableUsername";
 import { AvatarUploader } from "@/components/profile/AvatarUploader";
+import { ProfileSkeleton } from "@/components/profile/ProfileSkeleton";
 import { Button } from "@/components/ui/button";
 import { PriceChange } from "@/components/ui/price-change";
 import { formatUsd } from "@/lib/utils";
@@ -15,7 +16,7 @@ import { formatUsd } from "@/lib/utils";
 /** User profile: net-worth chart, holdings, activity history, and deposits. */
 export default function ProfilePage() {
   const { ready, authenticated, login } = useAuth();
-  const { account, positions } = useAccount(authenticated);
+  const { account, positions, isLoading: accountLoading } = useAccount(authenticated);
   const { points } = useNetworth();
 
   // Snapshots are recorded at trade time; append a trailing point at the live
@@ -26,7 +27,12 @@ export default function ProfilePage() {
       ? [...points, { time: points[points.length - 1].time + 1, valueUsd: account.totalValueUsd }]
       : points;
 
-  if (ready && !authenticated) {
+  // Auth still initializing, or signed in but account data not loaded yet.
+  if (!ready || (authenticated && accountLoading && !account)) {
+    return <ProfileSkeleton />;
+  }
+
+  if (!authenticated) {
     return (
       <div className="grid h-full place-items-center">
         <div className="text-center">
