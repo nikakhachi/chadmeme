@@ -1,36 +1,36 @@
 @import "tailwindcss";
 
 /*
-  ChadWallet design tokens (dark-only, fomo-inspired).
+  ChadWallet design tokens (dark-only), matched to chadwallet.xyz.
   Use semantic Tailwind classes everywhere instead of raw hex:
     bg-canvas / bg-panel / bg-elevated   surfaces
     border-line                          hairline borders
     text-foreground / text-muted / text-subtle
     text-up / text-down                  price movement (green / red)
-    bg-brand / text-brand                primary accent
+    bg-brand / text-brand                primary accent (Solana green)
     bg-positive                          buy button
 */
 @theme {
-  --color-canvas: #0a0b0d;
-  --color-panel: #131418;
-  --color-elevated: #1a1c22;
-  --color-line: #26282f;
+  --color-canvas: #080404;
+  --color-panel: #161a21;
+  --color-elevated: #242832;
+  --color-line: #1e293b;
 
-  --color-foreground: #f2f3f5;
-  --color-muted: #8b8f9a;
-  --color-subtle: #5f636e;
+  --color-foreground: #f8fafc;
+  --color-muted: #94a3b8;
+  --color-subtle: #64748b;
 
-  --color-up: #16c784;
-  --color-down: #ea4b5a;
+  --color-up: #14f195;
+  --color-down: #f44134;
 
-  --color-brand: #5b73ff;
-  --color-brand-foreground: #ffffff;
+  --color-brand: #14f195;
+  --color-brand-foreground: #04130c;
 
-  --color-positive: #16c784;
+  --color-positive: #14f195;
   --color-positive-foreground: #04130c;
 
-  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
-  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+  --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
 
 html {

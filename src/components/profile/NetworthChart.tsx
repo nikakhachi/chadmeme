@@ -20,17 +20,17 @@ export function NetworthChart({ points }: { points: NetworthPoint[] }) {
     if (!container) return;
 
     const chart = createChart(container, {
-      layout: { background: { color: "transparent" }, textColor: "#8b8f9a", fontFamily: "var(--font-sans)" },
-      grid: { vertLines: { visible: false }, horzLines: { color: "rgba(38,40,47,0.4)" } },
+      layout: { background: { color: "transparent" }, textColor: "#94a3b8", fontFamily: "var(--font-sans)" },
+      grid: { vertLines: { visible: false }, horzLines: { color: "rgba(30,41,59,0.5)" } },
       rightPriceScale: { borderVisible: false },
       timeScale: { borderVisible: false, timeVisible: true },
       crosshair: { mode: 0 },
       autoSize: true,
     });
     const series = chart.addSeries(AreaSeries, {
-      lineColor: "#16c784",
-      topColor: "rgba(22,199,132,0.35)",
-      bottomColor: "rgba(22,199,132,0.0)",
+      lineColor: "#14f195",
+      topColor: "rgba(20,241,149,0.30)",
+      bottomColor: "rgba(20,241,149,0.0)",
       lineWidth: 2,
     });
     chartRef.current = chart;

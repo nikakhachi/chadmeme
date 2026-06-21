@@ -65,17 +65,17 @@ export function PriceChart({
     const chart = createChart(container, {
       layout: {
         background: { color: "transparent" },
-        textColor: "#8b8f9a",
+        textColor: "#94a3b8",
         fontFamily: "var(--font-sans)",
       },
       // Group thousands + compact millions on the price axis & crosshair.
       localization: { priceFormatter: formatChartUsd },
       grid: {
-        vertLines: { color: "rgba(38,40,47,0.4)" },
-        horzLines: { color: "rgba(38,40,47,0.4)" },
+        vertLines: { color: "rgba(30,41,59,0.5)" },
+        horzLines: { color: "rgba(30,41,59,0.5)" },
       },
-      rightPriceScale: { borderColor: "#26282f" },
-      timeScale: { borderColor: "#26282f", timeVisible: true, secondsVisible: false },
+      rightPriceScale: { borderColor: "#1e293b" },
+      timeScale: { borderColor: "#1e293b", timeVisible: true, secondsVisible: false },
       crosshair: { mode: 0 },
       autoSize: true,
     });
@@ -104,13 +104,13 @@ export function PriceChart({
     priceSeriesRef.current =
       chartType === "candles"
         ? chart.addSeries(CandlestickSeries, {
-            upColor: "#16c784",
-            downColor: "#ea4b5a",
+            upColor: "#14f195",
+            downColor: "#f44134",
             borderVisible: false,
-            wickUpColor: "#16c784",
-            wickDownColor: "#ea4b5a",
+            wickUpColor: "#14f195",
+            wickDownColor: "#f44134",
           })
-        : chart.addSeries(LineSeries, { color: "#16c784", lineWidth: 2 });
+        : chart.addSeries(LineSeries, { color: "#14f195", lineWidth: 2 });
 
     // Markers attach to a series, so (re)create the plugin with it.
     markersRef.current = createSeriesMarkers(priceSeriesRef.current, []);
@@ -123,7 +123,7 @@ export function PriceChart({
       .map((m) => ({
         time: m.time as UTCTimestamp,
         position: m.side === "buy" ? ("belowBar" as const) : ("aboveBar" as const),
-        color: m.side === "buy" ? "#16c784" : "#ea4b5a",
+        color: m.side === "buy" ? "#14f195" : "#f44134",
         shape: m.side === "buy" ? ("arrowUp" as const) : ("arrowDown" as const),
         text: m.side === "buy" ? "B" : "S",
       }))
@@ -162,7 +162,7 @@ export function PriceChart({
       candles.map((c) => ({
         time: c.time as UTCTimestamp,
         value: c.volume,
-        color: c.close >= c.open ? "rgba(22,199,132,0.4)" : "rgba(234,75,90,0.4)",
+        color: c.close >= c.open ? "rgba(20,241,149,0.35)" : "rgba(244,65,52,0.35)",
       })),
     );
 
