@@ -43,9 +43,16 @@ export function NetworthChart({ points }: { points: NetworthPoint[] }) {
 
   useEffect(() => {
     if (!seriesRef.current || points.length === 0) return;
-    seriesRef.current.setData(
-      points.map((p) => ({ time: p.time as UTCTimestamp, value: p.valueUsd })),
-    );
+    // Lightweight Charts needs strictly-ascending, unique timestamps. Dedupe by
+    // time (keeping the latest value) and sort, so colliding snapshots / the
+    // appended live point can't break the series.
+    const byTime = new Map<number, number>();
+    for (const p of points) byTime.set(p.time, p.valueUsd);
+    const data = [...byTime.entries()]
+      .sort((a, b) => a[0] - b[0])
+      .map(([time, value]) => ({ time: time as UTCTimestamp, value }));
+
+    seriesRef.current.setData(data);
     chartRef.current?.timeScale().fitContent();
   }, [points]);
 

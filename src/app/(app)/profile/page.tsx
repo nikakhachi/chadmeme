@@ -17,6 +17,14 @@ export default function ProfilePage() {
   const { account, positions } = useAccount(authenticated);
   const { points } = useNetworth();
 
+  // Snapshots are recorded at trade time; append a trailing point at the live
+  // total so the chart's latest value matches the net-worth summary above it.
+  // (Timed just after the last snapshot to keep timestamps strictly ascending.)
+  const chartPoints =
+    account && points.length > 0
+      ? [...points, { time: points[points.length - 1].time + 1, valueUsd: account.totalValueUsd }]
+      : points;
+
   if (ready && !authenticated) {
     return (
       <div className="grid h-full place-items-center">
@@ -58,7 +66,7 @@ export default function ProfilePage() {
           <span>Positions {formatUsd(account?.positionsValueUsd ?? 0)}</span>
         </div>
         <div className="mt-4 h-56">
-          <NetworthChart points={points} />
+          <NetworthChart points={chartPoints} />
         </div>
       </div>
 
