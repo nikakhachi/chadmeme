@@ -1,6 +1,6 @@
 import "server-only";
 import { randomUUID } from "crypto";
-import type { NetworthPoint, Position, TradeRecord } from "@/types/trading";
+import type { FeedActivity, NetworthPoint, Position, TradeRecord } from "@/types/trading";
 import { applyTrade, STARTING_CASH_USD } from "./engine";
 import type { TradingStore } from "./store";
 
@@ -11,6 +11,8 @@ import type { TradingStore } from "./store";
  */
 interface UserState {
   cashUsd: number;
+  handle: string | null;
+  walletAddress: string | null;
   positions: Map<string, Position>;
   trades: TradeRecord[];
   networth: NetworthPoint[];
@@ -23,6 +25,8 @@ function ensure(userId: string): UserState {
   if (!state) {
     state = {
       cashUsd: STARTING_CASH_USD,
+      handle: null,
+      walletAddress: null,
       positions: new Map(),
       trades: [],
       networth: [
@@ -35,8 +39,32 @@ function ensure(userId: string): UserState {
 }
 
 export const memoryStore: TradingStore = {
-  async ensureUser(userId) {
-    ensure(userId);
+  async ensureUser(userId, info) {
+    const state = ensure(userId);
+    if (info?.handle) state.handle = info.handle;
+    if (info?.walletAddress) state.walletAddress = info.walletAddress;
+  },
+
+  async getRecentTrades(limit, offset) {
+    const all: FeedActivity[] = [];
+    for (const [userId, state] of users) {
+      for (const t of state.trades) {
+        all.push({
+          id: t.id,
+          traderId: userId,
+          traderHandle: state.handle,
+          traderWallet: state.walletAddress,
+          tokenAddress: t.tokenAddress,
+          tokenSymbol: t.tokenSymbol,
+          side: t.side,
+          tokenAmount: t.tokenAmount,
+          valueUsd: t.valueUsd,
+          createdAt: t.createdAt,
+        });
+      }
+    }
+    all.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+    return all.slice(offset, offset + limit);
   },
 
   async getCash(userId) {

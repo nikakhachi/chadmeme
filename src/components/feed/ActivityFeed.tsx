@@ -1,0 +1,87 @@
+"use client";
+import { useEffect, useRef } from "react";
+import Link from "next/link";
+import { useFeed } from "@/hooks/use-feed";
+import { TokenAvatar } from "@/components/ui/token-avatar";
+import { cn, formatUsd, shortenAddress, timeAgo } from "@/lib/utils";
+import type { FeedActivity } from "@/types/trading";
+
+/** Global activity feed of every trader's buys/sells, with infinite scroll. */
+export function ActivityFeed() {
+  const { activities, hasMore, isLoading, isLoadingMore, loadMore } = useFeed();
+  const sentinelRef = useRef<HTMLDivElement>(null);
+
+  // Load the next page when the sentinel scrolls into view.
+  useEffect(() => {
+    const el = sentinelRef.current;
+    if (!el || !hasMore) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) loadMore();
+      },
+      { rootMargin: "120px" },
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [hasMore, loadMore]);
+
+  if (isLoading && activities.length === 0) {
+    return (
+      <div className="space-y-2 px-2 py-2">
+        {Array.from({ length: 8 }).map((_, i) => (
+          <div key={i} className="h-12 animate-pulse rounded-lg bg-panel" />
+        ))}
+      </div>
+    );
+  }
+
+  if (activities.length === 0) {
+    return (
+      <p className="px-6 py-12 text-center text-sm text-muted">
+        No trades yet. Be the first to make one!
+      </p>
+    );
+  }
+
+  return (
+    <div className="px-1">
+      {activities.map((a) => (
+        <FeedRow key={a.id} activity={a} />
+      ))}
+      <div ref={sentinelRef} className="h-8">
+        {isLoadingMore && (
+          <p className="py-2 text-center text-xs text-subtle">Loading…</p>
+        )}
+        {!hasMore && (
+          <p className="py-2 text-center text-xs text-subtle">You&apos;re all caught up.</p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function FeedRow({ activity }: { activity: FeedActivity }) {
+  const trader =
+    activity.traderHandle ??
+    (activity.traderWallet ? shortenAddress(activity.traderWallet) : shortenAddress(activity.traderId));
+
+  return (
+    <Link
+      href={`/token/${activity.tokenAddress}`}
+      className="flex items-center gap-2.5 rounded-lg px-2.5 py-2.5 hover:bg-panel"
+    >
+      <TokenAvatar symbol={activity.tokenSymbol} size="sm" />
+      <div className="min-w-0 flex-1">
+        <div className="truncate text-sm">
+          <span className="font-semibold text-foreground">{trader}</span>{" "}
+          <span className={cn(activity.side === "buy" ? "text-up" : "text-down")}>
+            {activity.side === "buy" ? "bought" : "sold"}
+          </span>{" "}
+          <span className="font-medium text-foreground">{activity.tokenSymbol}</span>
+        </div>
+        <div className="text-xs text-muted">{timeAgo(new Date(activity.createdAt))} ago</div>
+      </div>
+      <div className="text-right text-sm font-semibold">{formatUsd(activity.valueUsd)}</div>
+    </Link>
+  );
+}

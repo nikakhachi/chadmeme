@@ -1,8 +1,14 @@
 import "server-only";
 import { getPrice, getPrices } from "@/lib/birdeye";
-import type { AccountSummary, NetworthPoint, PositionWithPnl, TradeRecord } from "@/types/trading";
+import type {
+  AccountSummary,
+  FeedActivity,
+  NetworthPoint,
+  PositionWithPnl,
+  TradeRecord,
+} from "@/types/trading";
 import type { TradeSide } from "@/types/market";
-import { getStore, type TradeToken } from "./store";
+import { getStore, type TradeToken, type UserInfo } from "./store";
 import { withPnl } from "./engine";
 
 /**
@@ -59,6 +65,8 @@ export interface ExecuteTradeInput {
   tokenAmount?: number;
   /** For sells: sell this fraction of holdings (0–1). */
   sellFraction?: number;
+  /** Trader profile, captured for the activity feed. */
+  trader?: UserInfo;
 }
 
 export async function executeTrade(
@@ -66,7 +74,7 @@ export async function executeTrade(
   input: ExecuteTradeInput,
 ): Promise<TradeRecord> {
   const store = getStore();
-  await store.ensureUser(userId);
+  await store.ensureUser(userId, input.trader);
 
   const priceUsd = await getPrice(input.token.address);
   if (priceUsd <= 0) throw new Error("Could not fetch a live price for this token.");
@@ -103,6 +111,11 @@ export async function executeTrade(
 
 export async function getActivity(userId: string, limit = 50): Promise<TradeRecord[]> {
   return getStore().getTrades(userId, limit);
+}
+
+/** Global activity feed: recent trades across all users, paginated. */
+export async function getFeed(limit: number, offset: number): Promise<FeedActivity[]> {
+  return getStore().getRecentTrades(limit, offset);
 }
 
 export async function getNetworth(userId: string): Promise<NetworthPoint[]> {

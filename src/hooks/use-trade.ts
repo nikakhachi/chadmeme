@@ -20,7 +20,7 @@ export interface PlaceTradeArgs {
  * account and activity caches so balances/positions update immediately.
  */
 export function useTrade() {
-  const { user } = useAuth();
+  const { user, walletAddress } = useAuth();
   const { mutate } = useSWRConfig();
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -36,7 +36,11 @@ export function useTrade() {
       const res = await fetch("/api/trade", {
         method: "POST",
         headers: { "content-type": "application/json", "x-cw-user": user.id },
-        body: JSON.stringify(args),
+        // Include trader profile so the global feed can show who traded.
+        body: JSON.stringify({
+          ...args,
+          trader: { handle: user.handle, walletAddress: walletAddress ?? undefined },
+        }),
       });
       const json = await res.json();
       if (!res.ok) {

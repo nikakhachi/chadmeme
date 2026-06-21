@@ -1,6 +1,6 @@
 import "server-only";
 import { getSupabaseAdmin } from "@/lib/supabase/admin";
-import type { NetworthPoint, Position, TradeRecord } from "@/types/trading";
+import type { FeedActivity, NetworthPoint, Position, TradeRecord } from "@/types/trading";
 import { applyTrade, STARTING_CASH_USD } from "./engine";
 import type { TradingStore } from "./store";
 
@@ -32,14 +32,38 @@ function rowToPosition(row: Record<string, unknown>): Position {
 }
 
 export const supabaseStore: TradingStore = {
-  async ensureUser(userId, walletAddress) {
+  async ensureUser(userId, info) {
     const db = getSupabaseAdmin();
-    await db
-      .from("users")
-      .upsert(
-        { id: userId, wallet_address: walletAddress ?? null, cash_usd: STARTING_CASH_USD },
-        { onConflict: "id", ignoreDuplicates: true },
-      );
+    // Upsert without cash_usd in the payload: on insert the column default
+    // (10000) applies; on conflict only handle/wallet update, cash untouched.
+    const row: Record<string, unknown> = { id: userId };
+    if (info?.handle) row.handle = info.handle;
+    if (info?.walletAddress) row.wallet_address = info.walletAddress;
+    await db.from("users").upsert(row, { onConflict: "id" });
+  },
+
+  async getRecentTrades(limit, offset) {
+    const db = getSupabaseAdmin();
+    const { data } = await db
+      .from("trades")
+      .select("*, users(handle, wallet_address)")
+      .order("created_at", { ascending: false })
+      .range(offset, offset + limit - 1);
+    return (data ?? []).map((row): FeedActivity => {
+      const user = (row.users ?? {}) as { handle?: string; wallet_address?: string };
+      return {
+        id: String(row.id),
+        traderId: String(row.user_id),
+        traderHandle: user.handle ?? null,
+        traderWallet: user.wallet_address ?? null,
+        tokenAddress: String(row.token_address),
+        tokenSymbol: String(row.token_symbol),
+        side: row.side as FeedActivity["side"],
+        tokenAmount: n(row.token_amount),
+        valueUsd: n(row.value_usd),
+        createdAt: String(row.created_at),
+      };
+    });
   },
 
   async getCash(userId) {

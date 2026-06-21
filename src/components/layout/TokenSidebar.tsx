@@ -3,18 +3,47 @@ import { useState } from "react";
 import { Star } from "lucide-react";
 import { useTrending, useWatchlistTokens } from "@/hooks/use-trending";
 import { useWatchlist } from "@/components/watchlist/watchlist-context";
+import { ActivityFeed } from "@/components/feed/ActivityFeed";
 import { TokenList } from "./TokenList";
 import { cn } from "@/lib/utils";
+
+const VIEWS = ["Tokens", "Feed"] as const;
+type View = (typeof VIEWS)[number];
+
+/**
+ * Left sidebar. Top-level nav switches between:
+ *   - Tokens: Trending / Watchlist sub-tabs + token list
+ *   - Feed:   global activity of every trader (infinite scroll)
+ */
+export function TokenSidebar() {
+  const [view, setView] = useState<View>("Tokens");
+
+  return (
+    <aside className="flex h-full w-[300px] shrink-0 flex-col border-r border-line bg-canvas">
+      <nav className="flex items-center gap-4 px-4 pt-3">
+        {VIEWS.map((v) => (
+          <button
+            key={v}
+            onClick={() => setView(v)}
+            className={cn(
+              "py-1 text-sm font-semibold transition-colors",
+              v === view ? "text-foreground" : "text-muted hover:text-foreground",
+            )}
+          >
+            {v}
+          </button>
+        ))}
+      </nav>
+
+      {view === "Tokens" ? <TokensPanel /> : <FeedPanel />}
+    </aside>
+  );
+}
 
 const TABS = ["Trending", "Watchlist"] as const;
 type Tab = (typeof TABS)[number];
 
-/**
- * Left sidebar: Trending / Watchlist tabs + the token list.
- * Trending streams from BirdEye; Watchlist resolves live data for the tokens
- * the user has starred (fetched only while the tab is active, to save API).
- */
-export function TokenSidebar() {
+function TokensPanel() {
   const [tab, setTab] = useState<Tab>("Trending");
   const { addresses } = useWatchlist();
   const isWatchlist = tab === "Watchlist";
@@ -26,7 +55,7 @@ export function TokenSidebar() {
   const loading = isWatchlist ? watchlist.isLoading : trending.isLoading;
 
   return (
-    <aside className="flex h-full w-[300px] shrink-0 flex-col border-r border-line bg-canvas">
+    <>
       <div className="flex gap-1.5 px-3 py-3">
         {TABS.map((t) => (
           <button
@@ -51,7 +80,15 @@ export function TokenSidebar() {
           <TokenList tokens={tokens} />
         )}
       </div>
-    </aside>
+    </>
+  );
+}
+
+function FeedPanel() {
+  return (
+    <div className="flex-1 overflow-y-auto px-2 pb-4 pt-2">
+      <ActivityFeed />
+    </div>
   );
 }
 
@@ -60,9 +97,7 @@ function EmptyWatchlist() {
     <div className="flex flex-col items-center gap-2 px-6 py-12 text-center text-sm text-muted">
       <Star className="size-6 text-subtle" />
       <p>Your watchlist is empty.</p>
-      <p className="text-xs text-subtle">
-        Tap the star on any token to add it here.
-      </p>
+      <p className="text-xs text-subtle">Tap the star on any token to add it here.</p>
     </div>
   );
 }

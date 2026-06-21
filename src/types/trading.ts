@@ -48,6 +48,20 @@ export interface TradeRecord {
   createdAt: string;
 }
 
+/** A trade by any user, shown in the global activity feed. */
+export interface FeedActivity {
+  id: string;
+  traderId: string;
+  traderHandle: string | null;
+  traderWallet: string | null;
+  tokenAddress: string;
+  tokenSymbol: string;
+  side: TradeSide;
+  tokenAmount: number;
+  valueUsd: number;
+  createdAt: string;
+}
+
 /** A single point in a user's net-worth history chart. */
 export interface NetworthPoint {
   /** Unix seconds. */

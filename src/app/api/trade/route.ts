@@ -14,6 +14,12 @@ const bodySchema = z.object({
   usdAmount: z.number().positive().optional(),
   tokenAmount: z.number().positive().optional(),
   sellFraction: z.number().min(0).max(1).optional(),
+  trader: z
+    .object({
+      handle: z.string().optional(),
+      walletAddress: z.string().optional(),
+    })
+    .optional(),
 });
 
 /** POST /api/trade — execute a paper buy/sell at the live market price. */
