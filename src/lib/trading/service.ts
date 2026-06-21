@@ -1,5 +1,7 @@
 import "server-only";
-import { getPrice, getPrices } from "@/lib/birdeye";
+import { getPrice, getTokensByAddresses } from "@/lib/birdeye";
+import { getSolBalance, getTokenBalances } from "@/lib/solana/balances";
+import { MINTS } from "@/lib/solana/connection";
 import type {
   AccountSummary,
   FeedActivity,
@@ -9,12 +11,11 @@ import type {
 } from "@/types/trading";
 import type { TradeSide } from "@/types/market";
 import { getStore, type TradeToken, type UserInfo } from "./store";
-import { withPnl } from "./engine";
 
 /**
- * Trading service — the use-case layer the API routes call. Composes the
- * persistence store with live BirdEye prices to produce display-ready account
- * state and to execute trades at the current market price.
+ * Trading service — the use-case layer the API routes call. Account state is
+ * derived from REAL on-chain balances (SOL/USDC/SPL tokens) priced with
+ * BirdEye; cost basis (for PnL) is reconstructed from our trade ledger.
  */
 
 export interface AccountView {
@@ -22,22 +23,75 @@ export interface AccountView {
   positions: PositionWithPnl[];
 }
 
-export async function getAccountView(userId: string): Promise<AccountView> {
+const EMPTY_SUMMARY: AccountSummary = {
+  cashUsd: 0,
+  positionsValueUsd: 0,
+  totalValueUsd: 0,
+  change24hUsd: 0,
+  change24hPercent: 0,
+  solBalance: 0,
+  usdcBalance: 0,
+};
+
+export async function getAccountView(
+  userId: string,
+  walletAddress: string | null,
+): Promise<AccountView> {
   const store = getStore();
   await store.ensureUser(userId);
+  if (!walletAddress) return { summary: EMPTY_SUMMARY, positions: [] };
 
-  const [cashUsd, positions] = await Promise.all([
-    store.getCash(userId),
-    store.getPositions(userId),
+  const [solBalance, tokenBalances, trades] = await Promise.all([
+    getSolBalance(walletAddress),
+    getTokenBalances(walletAddress),
+    store.getTrades(userId, 500),
   ]);
 
-  const prices = await getPrices(positions.map((p) => p.tokenAddress));
-  const enriched = positions.map((p) => withPnl(p, prices[p.tokenAddress] ?? 0));
+  const usdcBalance = tokenBalances.find((b) => b.mint === MINTS.USDC)?.amount ?? 0;
+  const holdings = tokenBalances.filter(
+    (b) => b.mint !== MINTS.USDC && b.mint !== MINTS.SOL && b.amount > 0,
+  );
 
-  const positionsValueUsd = enriched.reduce((sum, p) => sum + p.currentValueUsd, 0);
+  // Live SOL price + metadata/prices for every held token (one BirdEye call each).
+  const [solPrice, tokens] = await Promise.all([
+    getPrice(MINTS.SOL),
+    getTokensByAddresses(holdings.map((b) => b.mint)),
+  ]);
+  const tokenMap = new Map(tokens.map((t) => [t.address, t]));
+  const avgEntries = computeAvgEntries(trades);
+
+  const positions: PositionWithPnl[] = holdings
+    .map((b): PositionWithPnl => {
+      const meta = tokenMap.get(b.mint);
+      const price = meta?.priceUsd ?? 0;
+      const avgEntry = avgEntries.get(b.mint) ?? 0;
+      const currentValueUsd = b.amount * price;
+      return {
+        id: b.mint,
+        userId,
+        tokenAddress: b.mint,
+        tokenSymbol: meta?.symbol ?? "—",
+        tokenLogoURI: meta?.logoURI,
+        amount: b.amount,
+        avgEntryPriceUsd: avgEntry,
+        costBasisUsd: avgEntry * b.amount,
+        createdAt: "",
+        updatedAt: "",
+        currentPriceUsd: price,
+        currentValueUsd,
+        pnlUsd: avgEntry > 0 ? (price - avgEntry) * b.amount : 0,
+        pnlPercent: avgEntry > 0 ? ((price - avgEntry) / avgEntry) * 100 : 0,
+      };
+    })
+    .filter((p) => p.currentValueUsd >= 0.01) // drop dust
+    .sort((a, b) => b.currentValueUsd - a.currentValueUsd);
+
+  const solValueUsd = solBalance * solPrice;
+  const cashUsd = solValueUsd + usdcBalance; // USDC ≈ $1
+  const positionsValueUsd = positions.reduce((s, p) => s + p.currentValueUsd, 0);
   const totalValueUsd = cashUsd + positionsValueUsd;
 
-  // 24h change is approximated from the net-worth series until we snapshot more.
+  // 24h change from net-worth snapshots (sampled on trades).
   const series = await store.getNetworthSeries(userId);
   const dayAgo = Date.now() / 1000 - 86_400;
   const past = [...series].reverse().find((p) => p.time <= dayAgo) ?? series[0];
@@ -51,9 +105,35 @@ export async function getAccountView(userId: string): Promise<AccountView> {
       totalValueUsd,
       change24hUsd,
       change24hPercent,
+      solBalance,
+      usdcBalance,
     },
-    positions: enriched.sort((a, b) => b.currentValueUsd - a.currentValueUsd),
+    positions,
   };
+}
+
+/**
+ * Reconstruct each token's weighted-average entry price (USD) from the trade
+ * ledger, so we can show real PnL against on-chain holdings.
+ */
+function computeAvgEntries(trades: TradeRecord[]): Map<string, number> {
+  const acc = new Map<string, { amount: number; cost: number }>();
+  // Ledger is newest-first; replay oldest-first.
+  for (const t of [...trades].reverse()) {
+    const cur = acc.get(t.tokenAddress) ?? { amount: 0, cost: 0 };
+    if (t.side === "buy") {
+      cur.amount += t.tokenAmount;
+      cur.cost += t.valueUsd;
+    } else {
+      const avg = cur.amount > 0 ? cur.cost / cur.amount : 0;
+      cur.amount = Math.max(0, cur.amount - t.tokenAmount);
+      cur.cost = avg * cur.amount; // keep avg constant on sells
+    }
+    acc.set(t.tokenAddress, cur);
+  }
+  const out = new Map<string, number>();
+  for (const [addr, v] of acc) if (v.amount > 1e-9) out.set(addr, v.cost / v.amount);
+  return out;
 }
 
 export interface ExecuteTradeInput {
@@ -102,10 +182,7 @@ export async function executeTrade(
     priceUsd,
   });
 
-  // Snapshot net worth after the trade so the chart reflects activity.
-  const { summary } = await getAccountView(userId);
-  await store.snapshotNetworth(userId, summary.totalValueUsd);
-
+  // NOTE: paper-trading path — replaced by real on-chain swaps in Phase B.
   return trade;
 }
 

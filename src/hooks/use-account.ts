@@ -14,14 +14,16 @@ interface AccountResponse {
  * to authenticated users.
  */
 export function useAccount(enabled = true) {
-  const { user } = useAuth();
+  const { user, walletAddress } = useAuth();
   const userId = user?.id;
 
   const { data, error, isLoading, mutate } = useSWR<AccountResponse>(
-    enabled && userId ? ["/api/account", userId] : null,
+    enabled && userId ? ["/api/account", userId, walletAddress] : null,
     ([url]: [string]) =>
-      fetch(url, { headers: { "x-cw-user": userId! } }).then((r) => r.json()),
-    { refreshInterval: 15_000, revalidateOnFocus: true },
+      fetch(url, {
+        headers: { "x-cw-user": userId!, "x-cw-wallet": walletAddress ?? "" },
+      }).then((r) => r.json()),
+    { refreshInterval: 30_000, revalidateOnFocus: false },
   );
 
   return {

@@ -8,6 +8,7 @@ export async function GET(request: Request) {
   if (!userId) {
     return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
   }
-  const view = await getAccountView(userId);
+  const walletAddress = request.headers.get("x-cw-wallet") || null;
+  const view = await getAccountView(userId, walletAddress);
   return NextResponse.json(view);
 }

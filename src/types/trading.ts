@@ -75,7 +75,10 @@ export interface NetworthPoint {
   valueUsd: number;
 }
 
-/** Aggregated account state shown on the profile. */
+/**
+ * Aggregated account state, derived from real on-chain balances.
+ * `cashUsd` = SOL + USDC buying power; `positionsValueUsd` = token holdings.
+ */
 export interface AccountSummary {
   cashUsd: number;
   positionsValueUsd: number;
@@ -83,4 +86,7 @@ export interface AccountSummary {
   /** 24h change in total value, USD and percent. */
   change24hUsd: number;
   change24hPercent: number;
+  /** Native SOL balance (in SOL) and USDC balance (in USDC). */
+  solBalance: number;
+  usdcBalance: number;
 }
