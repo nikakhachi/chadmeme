@@ -23,7 +23,7 @@ function withAuth(children: React.ReactNode) {
     <PrivyProvider
       appId={publicEnv.privyAppId}
       config={{
-        loginMethods: ["google", "apple", "email"],
+        loginMethods: ["google", "email"],
         appearance: {
           theme: "dark",
           accentColor: "#5b73ff",
