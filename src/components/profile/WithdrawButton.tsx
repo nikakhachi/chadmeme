@@ -6,6 +6,7 @@ import { useAccount } from "@/hooks/use-account";
 import { useWithdraw } from "@/hooks/use-withdraw";
 import { Button } from "@/components/ui/button";
 import { Modal } from "@/components/ui/modal";
+import { AssetIcon } from "@/components/ui/asset-icon";
 import { cn } from "@/lib/utils";
 
 type Asset = "SOL" | "USDC";
@@ -78,12 +79,13 @@ export function WithdrawButton() {
                   key={a}
                   onClick={() => setAsset(a)}
                   className={cn(
-                    "flex-1 rounded-md py-1.5 text-sm font-semibold transition-colors",
+                    "flex flex-1 items-center justify-center gap-1.5 rounded-md py-1.5 text-sm font-semibold transition-colors",
                     asset === a
                       ? "bg-elevated text-foreground"
                       : "text-muted hover:text-foreground",
                   )}
                 >
+                  <AssetIcon asset={a} className="size-4" />
                   {a}
                 </button>
               ))}

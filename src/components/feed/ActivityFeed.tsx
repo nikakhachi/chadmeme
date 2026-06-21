@@ -3,6 +3,7 @@ import { useEffect, useRef } from "react";
 import Link from "next/link";
 import { useFeed } from "@/hooks/use-feed";
 import { TokenAvatar } from "@/components/ui/token-avatar";
+import { AssetIcon } from "@/components/ui/asset-icon";
 import { cn, formatCompactUsd, shortenAddress, timeAgo } from "@/lib/utils";
 import type { FeedActivity } from "@/types/trading";
 
@@ -107,6 +108,13 @@ function FeedRow({ activity }: { activity: FeedActivity }) {
         <span className="font-semibold text-foreground">
           {formatCompactUsd(activity.valueUsd)}
         </span>
+        {activity.payAsset && (
+          <span className="flex items-center gap-1 text-xs text-muted">
+            {isBuy ? "with" : "for"}
+            <AssetIcon asset={activity.payAsset} className="size-3.5" />
+            {activity.payAsset}
+          </span>
+        )}
       </div>
     </Link>
   );

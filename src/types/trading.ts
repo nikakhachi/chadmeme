@@ -47,6 +47,8 @@ export interface TradeRecord {
   valueUsd: number;
   /** Token market cap at trade time, if captured. */
   marketCapUsd?: number | null;
+  /** Base asset paid (buy) / received (sell). */
+  payAsset?: "SOL" | "USDC" | null;
   createdAt: string;
 }
 
@@ -64,6 +66,8 @@ export interface FeedActivity {
   valueUsd: number;
   /** Token market cap at the time of the trade (if captured). */
   marketCapUsd: number | null;
+  /** Base asset paid (buy) / received (sell). */
+  payAsset: "SOL" | "USDC" | null;
   createdAt: string;
 }
 

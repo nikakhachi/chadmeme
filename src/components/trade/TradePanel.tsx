@@ -4,6 +4,7 @@ import { useAuth } from "@/components/auth/auth-context";
 import { useAccount } from "@/hooks/use-account";
 import { useExecuteTrade } from "@/hooks/use-execute-trade";
 import { Button } from "@/components/ui/button";
+import { AssetIcon } from "@/components/ui/asset-icon";
 import { cn, formatTokenPrice, formatUsd } from "@/lib/utils";
 import type { TokenDetail } from "@/types/market";
 
@@ -121,10 +122,11 @@ export function TradePanel({ token }: { token: TokenDetail }) {
               key={a}
               onClick={() => setPayAsset(a)}
               className={cn(
-                "rounded-md px-2.5 py-1 text-xs font-semibold transition-colors",
+                "flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-semibold transition-colors",
                 payAsset === a ? "bg-elevated text-foreground" : "text-muted hover:text-foreground",
               )}
             >
+              <AssetIcon asset={a} className="size-3.5" />
               {a}
             </button>
           ))}

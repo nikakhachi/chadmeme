@@ -6,6 +6,7 @@ import { useAuth } from "@/components/auth/auth-context";
 import { Button } from "@/components/ui/button";
 import { Modal } from "@/components/ui/modal";
 import { CopyAddress } from "@/components/ui/copy-address";
+import { SolIcon } from "@/components/ui/asset-icon";
 
 /**
  * "Deposit" button that opens a modal with the user's Solana wallet address as
@@ -28,7 +29,8 @@ export function DepositButton() {
         title="Deposit with crypto"
       >
         <div className="flex flex-col items-center text-center">
-          <span className="mb-3 rounded-full bg-elevated px-3 py-1 text-xs font-semibold text-brand">
+          <span className="mb-3 flex items-center gap-1.5 rounded-full bg-elevated px-3 py-1 text-xs font-semibold text-brand">
+            <SolIcon className="size-3.5" />
             Solana network
           </span>
           <p className="mb-4 text-sm text-muted">
