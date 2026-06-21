@@ -19,7 +19,11 @@ import { formatUsd } from "@/lib/utils";
 /** User profile: net-worth chart, holdings, activity history, and deposits. */
 export default function ProfilePage() {
   const { ready, authenticated, login } = useAuth();
-  const { account, positions, isLoading: accountLoading } = useAccount(authenticated);
+  const {
+    account,
+    positions,
+    isLoading: accountLoading,
+  } = useAccount(authenticated);
   const { points } = useNetworth();
 
   // Snapshots are recorded at trade time; append a trailing point at the live
@@ -27,7 +31,13 @@ export default function ProfilePage() {
   // (Timed just after the last snapshot to keep timestamps strictly ascending.)
   const chartPoints =
     account && points.length > 0
-      ? [...points, { time: points[points.length - 1].time + 1, valueUsd: account.totalValueUsd }]
+      ? [
+          ...points,
+          {
+            time: points[points.length - 1].time + 1,
+            valueUsd: account.totalValueUsd,
+          },
+        ]
       : points;
 
   // Auth still initializing, or signed in but account data not loaded yet.
@@ -67,30 +77,45 @@ export default function ProfilePage() {
       {/* Net worth */}
       <div className="mb-6 rounded-xl border border-line bg-panel p-5">
         <div className="mb-1 text-sm text-muted">Net worth</div>
-        <div className="flex items-baseline gap-3">
-          <span className="text-3xl font-bold">{formatUsd(account?.totalValueUsd ?? 0)}</span>
-          {account && (
-            <span className="text-sm">
-              <PriceChange value={account.change24hPercent} />{" "}
-              <span className="text-muted">24h</span>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-baseline gap-3">
+            <span className="text-3xl font-bold">
+              {formatUsd(account?.totalValueUsd ?? 0)}
             </span>
-          )}
-        </div>
-        <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-muted">
-          <span className="flex items-center gap-1.5">
-            <AssetIcon asset="SOL" className="size-3.5" />
-            <span className="font-medium text-foreground">
-              {(account?.solBalance ?? 0).toLocaleString("en-US", { maximumFractionDigits: 4 })} SOL
+            {account && (
+              <span className="text-sm">
+                <PriceChange value={account.change24hPercent} />{" "}
+                <span className="text-muted">24h</span>
+              </span>
+            )}
+          </div>
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-muted">
+            <span className="flex items-center gap-1.5">
+              <AssetIcon asset="SOL" className="size-3.5" />
+              <span className="font-medium text-foreground">
+                {(account?.solBalance ?? 0).toLocaleString("en-US", {
+                  maximumFractionDigits: 4,
+                })}{" "}
+                SOL
+              </span>
+              <span>
+                (
+                {formatUsd(
+                  (account?.solBalance ?? 0) * (account?.solPriceUsd ?? 0),
+                )}
+                )
+              </span>
             </span>
-            <span>({formatUsd((account?.solBalance ?? 0) * (account?.solPriceUsd ?? 0))})</span>
-          </span>
-          <span className="flex items-center gap-1.5">
-            <AssetIcon asset="USDC" className="size-3.5" />
-            <span className="font-medium text-foreground">
-              {(account?.usdcBalance ?? 0).toLocaleString("en-US", { maximumFractionDigits: 2 })} USDC
+            <span className="flex items-center gap-1.5">
+              <AssetIcon asset="USDC" className="size-3.5" />
+              <span className="font-medium text-foreground">
+                {(account?.usdcBalance ?? 0).toLocaleString("en-US", {
+                  maximumFractionDigits: 2,
+                })}{" "}
+                USDC
+              </span>
             </span>
-          </span>
-          <span>Positions {formatUsd(account?.positionsValueUsd ?? 0)}</span>
+          </div>
         </div>
         <div className="mt-4 h-56">
           <NetworthChart points={chartPoints} />
@@ -110,10 +135,18 @@ export default function ProfilePage() {
   );
 }
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
+function Section({
+  title,
+  children,
+}: {
+  title: string;
+  children: React.ReactNode;
+}) {
   return (
     <div className="overflow-hidden rounded-xl border border-line bg-panel">
-      <div className="border-b border-line px-4 py-3 text-sm font-bold">{title}</div>
+      <div className="border-b border-line px-4 py-3 text-sm font-bold">
+        {title}
+      </div>
       {children}
     </div>
   );
