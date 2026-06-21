@@ -9,6 +9,7 @@ const bodySchema = z.object({
     address: z.string().min(1),
     symbol: z.string().min(1),
     logoURI: z.string().optional(),
+    marketCap: z.number().optional(),
   }),
   side: z.enum(["buy", "sell"]),
   usdAmount: z.number().positive().optional(),

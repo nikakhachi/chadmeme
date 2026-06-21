@@ -63,7 +63,12 @@ export function TradePanel({ token }: { token: TokenDetail }) {
 
   async function submit() {
     if (!authenticated) return login();
-    const t = { address: token.address, symbol: token.symbol, logoURI: token.logoURI };
+    const t = {
+      address: token.address,
+      symbol: token.symbol,
+      logoURI: token.logoURI,
+      marketCap: token.marketCap,
+    };
     const ok =
       side === "buy"
         ? await placeTrade({ token: t, side: "buy", usdAmount: Number(buyUsd) })

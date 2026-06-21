@@ -5,7 +5,7 @@ import { useAuth } from "@/components/auth/auth-context";
 import type { TradeSide } from "@/types/market";
 
 export interface PlaceTradeArgs {
-  token: { address: string; symbol: string; logoURI?: string };
+  token: { address: string; symbol: string; logoURI?: string; marketCap?: number };
   side: TradeSide;
   /** Buys: USD to spend. */
   usdAmount?: number;

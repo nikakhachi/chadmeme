@@ -10,6 +10,8 @@ export interface TradeToken {
   address: string;
   symbol: string;
   logoURI?: string;
+  /** Market cap at trade time, captured for the activity feed. */
+  marketCap?: number;
 }
 
 /** Optional profile info captured when a user first acts (for the feed). */

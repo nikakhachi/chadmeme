@@ -3,7 +3,7 @@ import { useEffect, useRef } from "react";
 import Link from "next/link";
 import { useFeed } from "@/hooks/use-feed";
 import { TokenAvatar } from "@/components/ui/token-avatar";
-import { cn, formatUsd, shortenAddress, timeAgo } from "@/lib/utils";
+import { cn, formatCompactUsd, shortenAddress, timeAgo } from "@/lib/utils";
 import type { FeedActivity } from "@/types/trading";
 
 /** Global activity feed of every trader's buys/sells, with infinite scroll. */
@@ -64,24 +64,43 @@ function FeedRow({ activity }: { activity: FeedActivity }) {
   const trader =
     activity.traderHandle ??
     (activity.traderWallet ? shortenAddress(activity.traderWallet) : shortenAddress(activity.traderId));
+  const isBuy = activity.side === "buy";
 
   return (
     <Link
       href={`/token/${activity.tokenAddress}`}
-      className="flex items-center gap-2.5 rounded-lg px-2.5 py-2.5 hover:bg-panel"
+      className="block rounded-lg px-2.5 py-3 hover:bg-panel"
     >
-      <TokenAvatar symbol={activity.tokenSymbol} size="sm" />
-      <div className="min-w-0 flex-1">
-        <div className="truncate text-sm">
-          <span className="font-semibold text-foreground">{trader}</span>{" "}
-          <span className={cn(activity.side === "buy" ? "text-up" : "text-down")}>
-            {activity.side === "buy" ? "bought" : "sold"}
-          </span>{" "}
-          <span className="font-medium text-foreground">{activity.tokenSymbol}</span>
-        </div>
-        <div className="text-xs text-muted">{timeAgo(new Date(activity.createdAt))} ago</div>
+      {/* Line 1: trader + buy/sell badge + time */}
+      <div className="flex items-center gap-2.5">
+        <TokenAvatar symbol={trader} />
+        <span className="truncate text-sm font-semibold text-foreground">{trader}</span>
+        <span
+          className={cn(
+            "rounded px-1.5 py-0.5 text-xs font-bold",
+            isBuy ? "bg-up/15 text-up" : "bg-down/15 text-down",
+          )}
+        >
+          {isBuy ? "Buy" : "Sell"}
+        </span>
+        <span className="ml-auto shrink-0 text-xs text-muted">
+          {timeAgo(new Date(activity.createdAt))}
+        </span>
       </div>
-      <div className="text-right text-sm font-semibold">{formatUsd(activity.valueUsd)}</div>
+
+      {/* Line 2: token + value at market cap */}
+      <div className="mt-1.5 flex items-center gap-2 pl-[46px] text-sm">
+        <TokenAvatar symbol={activity.tokenSymbol} size="sm" />
+        <span className="font-semibold text-foreground">{activity.tokenSymbol}</span>
+        <span className="font-semibold text-foreground">
+          {formatCompactUsd(activity.valueUsd)}
+        </span>
+        {activity.marketCapUsd != null && (
+          <span className="text-muted">
+            at <span className="text-foreground">{formatCompactUsd(activity.marketCapUsd)}</span> MC
+          </span>
+        )}
+      </div>
     </Link>
   );
 }

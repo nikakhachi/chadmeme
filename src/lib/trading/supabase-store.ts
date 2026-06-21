@@ -79,6 +79,7 @@ export const supabaseStore: TradingStore = {
         side: row.side as FeedActivity["side"],
         tokenAmount: n(row.token_amount),
         valueUsd: n(row.value_usd),
+        marketCapUsd: row.market_cap == null ? null : n(row.market_cap),
         createdAt: String(row.created_at),
       };
     });
@@ -181,6 +182,7 @@ export const supabaseStore: TradingStore = {
         token_amount: tokenAmount,
         price_usd: priceUsd,
         value_usd: result.valueUsd,
+        market_cap: token.marketCap ?? null,
       })
       .select()
       .single();

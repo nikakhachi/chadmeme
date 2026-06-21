@@ -45,6 +45,8 @@ export interface TradeRecord {
   priceUsd: number;
   /** USD value moved (tokenAmount * priceUsd). */
   valueUsd: number;
+  /** Token market cap at trade time, if captured. */
+  marketCapUsd?: number | null;
   createdAt: string;
 }
 
@@ -59,6 +61,8 @@ export interface FeedActivity {
   side: TradeSide;
   tokenAmount: number;
   valueUsd: number;
+  /** Token market cap at the time of the trade (if captured). */
+  marketCapUsd: number | null;
   createdAt: string;
 }
 

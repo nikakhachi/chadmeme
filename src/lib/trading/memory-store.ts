@@ -69,6 +69,7 @@ export const memoryStore: TradingStore = {
           side: t.side,
           tokenAmount: t.tokenAmount,
           valueUsd: t.valueUsd,
+          marketCapUsd: t.marketCapUsd ?? null,
           createdAt: t.createdAt,
         });
       }
@@ -135,6 +136,7 @@ export const memoryStore: TradingStore = {
       tokenAmount,
       priceUsd,
       valueUsd: result.valueUsd,
+      marketCapUsd: token.marketCap ?? null,
       createdAt: new Date().toISOString(),
     };
     state.trades.unshift(trade);
