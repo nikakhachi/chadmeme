@@ -8,6 +8,7 @@ import { PositionsList } from "@/components/profile/PositionsList";
 import { DepositButton } from "@/components/profile/DepositButton";
 import { WithdrawButton } from "@/components/profile/WithdrawButton";
 import { ConvertButton } from "@/components/profile/ConvertButton";
+import { AssetIcon } from "@/components/ui/asset-icon";
 import { EditableUsername } from "@/components/profile/EditableUsername";
 import { AvatarUploader } from "@/components/profile/AvatarUploader";
 import { ProfileSkeleton } from "@/components/profile/ProfileSkeleton";
@@ -75,8 +76,20 @@ export default function ProfilePage() {
             </span>
           )}
         </div>
-        <div className="mt-1 flex gap-4 text-xs text-muted">
-          <span>Cash {formatUsd(account?.cashUsd ?? 0)}</span>
+        <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-muted">
+          <span className="flex items-center gap-1.5">
+            <AssetIcon asset="SOL" className="size-3.5" />
+            <span className="font-medium text-foreground">
+              {(account?.solBalance ?? 0).toLocaleString("en-US", { maximumFractionDigits: 4 })} SOL
+            </span>
+            <span>({formatUsd((account?.solBalance ?? 0) * (account?.solPriceUsd ?? 0))})</span>
+          </span>
+          <span className="flex items-center gap-1.5">
+            <AssetIcon asset="USDC" className="size-3.5" />
+            <span className="font-medium text-foreground">
+              {(account?.usdcBalance ?? 0).toLocaleString("en-US", { maximumFractionDigits: 2 })} USDC
+            </span>
+          </span>
           <span>Positions {formatUsd(account?.positionsValueUsd ?? 0)}</span>
         </div>
         <div className="mt-4 h-56">

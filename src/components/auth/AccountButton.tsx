@@ -5,14 +5,12 @@ import { User, LogOut, ChevronDown } from "lucide-react";
 import { useAuth } from "./auth-context";
 import { Button } from "@/components/ui/button";
 import { TokenAvatar } from "@/components/ui/token-avatar";
-import { useAccount } from "@/hooks/use-account";
+import { BalancePills } from "@/components/ui/balance-pills";
 import { useProfile } from "@/hooks/use-profile";
-import { formatUsd } from "@/lib/utils";
 
 /** Top-bar account control: log in, or balance + menu when authenticated. */
 export function AccountButton() {
   const { ready, authenticated, login, logout } = useAuth();
-  const { account } = useAccount(authenticated);
   const { username, avatarUrl } = useProfile();
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -30,12 +28,7 @@ export function AccountButton() {
 
   return (
     <div className="relative flex items-center gap-3">
-      <div className="hidden text-right sm:block">
-        <div className="text-xs text-muted">Cash</div>
-        <div className="text-sm font-semibold">
-          {formatUsd(account?.cashUsd ?? 0)}
-        </div>
-      </div>
+      <BalancePills className="hidden sm:flex" />
       <button
         onClick={() => setMenuOpen((o) => !o)}
         onBlur={() => setTimeout(() => setMenuOpen(false), 150)}
