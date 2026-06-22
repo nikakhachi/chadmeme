@@ -6,6 +6,10 @@ export const APP_STORE_URL =
 export const PLAY_STORE_URL =
   "https://play.google.com/store/apps/details?id=xyz.chadwallet.www";
 
+/** Shared pill styling for store badges (and the matching nav Log in button). */
+export const STORE_BADGE_CLASS =
+  "inline-flex h-12 items-center gap-2.5 rounded-xl border border-white/15 bg-black/60 px-4 backdrop-blur transition-colors hover:border-white/30 hover:bg-black/80";
+
 function AppleIcon({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 24 24" fill="currentColor" className={className} aria-hidden>
@@ -44,10 +48,7 @@ function Badge({
       href={href}
       target="_blank"
       rel="noopener noreferrer"
-      className={cn(
-        "inline-flex items-center gap-2.5 rounded-xl border border-white/15 bg-black/60 px-4 py-2 backdrop-blur transition-colors hover:border-white/30 hover:bg-black/80",
-        className,
-      )}
+      className={cn(STORE_BADGE_CLASS, className)}
     >
       <span className="text-foreground">{icon}</span>
       <span className="flex flex-col leading-none">

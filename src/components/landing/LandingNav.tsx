@@ -2,9 +2,8 @@
 /* eslint-disable @next/next/no-img-element -- static brand asset */
 import { useEffect, useState } from "react";
 import { useAuth } from "@/components/auth/auth-context";
-import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { StoreBadges } from "./StoreBadges";
+import { StoreBadges, STORE_BADGE_CLASS } from "./StoreBadges";
 
 /** Sticky landing top bar — transparent over the hero, frosted once scrolled. */
 export function LandingNav() {
@@ -41,9 +40,15 @@ export function LandingNav() {
 
         <div className="flex items-center gap-3">
           <StoreBadges className="hidden lg:flex" />
-          <Button onClick={login} variant="outline" size="md">
+          <button
+            onClick={login}
+            className={cn(
+              STORE_BADGE_CLASS,
+              "justify-center px-6 text-sm font-semibold text-foreground",
+            )}
+          >
             Log in
-          </Button>
+          </button>
         </div>
       </div>
     </header>
