@@ -34,8 +34,8 @@ export function LandingNav() {
             alt="ChadWallet"
             className="size-9 rounded-xl"
           />
-          <span className="text-xl font-extrabold lowercase tracking-tight">
-            chad<span className="text-brand">wallet</span>
+          <span className="text-xl font-extrabold tracking-tight">
+            Chad<span className="text-brand">Wallet</span>
           </span>
         </div>
 

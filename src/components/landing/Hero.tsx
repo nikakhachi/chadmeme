@@ -52,10 +52,10 @@ export function Hero() {
         />
 
         <h1
-          className="lp-rise text-6xl font-extrabold lowercase leading-[0.95] tracking-tight sm:text-8xl"
+          className="lp-rise text-6xl font-extrabold leading-[0.95] tracking-tight sm:text-8xl"
           style={{ animationDelay: "80ms" }}
         >
-          chad<span className="text-brand">wallet</span>
+          Chad<span className="text-brand">Wallet</span>
         </h1>
 
         <p
