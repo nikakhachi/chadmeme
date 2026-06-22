@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { User, LogOut, ChevronDown } from "lucide-react";
 import { useAuth } from "./auth-context";
 import { Button } from "@/components/ui/button";
@@ -13,6 +14,13 @@ export function AccountButton() {
   const { ready, authenticated, login, logout } = useAuth();
   const { username, avatarUrl } = useProfile();
   const [menuOpen, setMenuOpen] = useState(false);
+  const router = useRouter();
+
+  // After logging out, return to the landing page (signed-out home).
+  const handleLogout = () => {
+    logout();
+    router.push("/");
+  };
 
   if (!ready) {
     return <div className="h-10 w-24 animate-pulse rounded-lg bg-panel" />;
@@ -55,7 +63,7 @@ export function AccountButton() {
             <User className="size-4" /> Your profile
           </Link>
           <button
-            onClick={logout}
+            onClick={handleLogout}
             className="flex w-full items-center gap-2 px-4 py-2.5 text-sm text-down hover:bg-elevated"
           >
             <LogOut className="size-4" /> Log out
