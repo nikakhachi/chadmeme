@@ -43,6 +43,14 @@ export function Hero() {
           Now live on web &amp; mobile
         </span>
 
+        {/* Floating mascot — sits right above the wordmark. */}
+        <img
+          src="/assets/logo/dark.png"
+          alt=""
+          aria-hidden
+          className="lp-float mb-6 size-24 rounded-3xl border border-line/60 shadow-2xl shadow-brand/10 sm:size-28"
+        />
+
         <h1
           className="lp-rise text-6xl font-extrabold lowercase leading-[0.95] tracking-tight sm:text-8xl"
           style={{ animationDelay: "80ms" }}
@@ -84,17 +92,7 @@ export function Hero() {
           </Button>
         </div>
 
-        <StoreBadges
-          className="lp-rise mt-8 justify-center lg:hidden"
-        />
-
-        {/* Floating mascot — drifts gently below the fold cue. */}
-        <img
-          src="/assets/logo/dark.png"
-          alt=""
-          aria-hidden
-          className="lp-float mt-16 size-24 rounded-3xl border border-line/60 shadow-2xl shadow-brand/10 sm:size-28"
-        />
+        <StoreBadges className="lp-rise mt-8 justify-center lg:hidden" />
       </div>
     </section>
   );
