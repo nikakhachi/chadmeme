@@ -55,7 +55,7 @@ export function Hero() {
           className="lp-rise text-6xl font-extrabold leading-[0.95] tracking-tight sm:text-8xl"
           style={{ animationDelay: "80ms" }}
         >
-          Chad<span className="text-brand">Wallet</span>
+          ChadWallet
         </h1>
 
         <p

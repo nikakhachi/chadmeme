@@ -34,7 +34,7 @@ export function LandingNav() {
             className="size-9 rounded-xl"
           />
           <span className="text-xl font-extrabold tracking-tight">
-            Chad<span className="text-brand">Wallet</span>
+            ChadWallet
           </span>
         </div>
 
@@ -47,7 +47,7 @@ export function LandingNav() {
               "justify-center px-6 text-sm font-semibold text-foreground",
             )}
           >
-            Log in
+            Login
           </button>
         </div>
       </div>
