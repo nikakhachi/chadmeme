@@ -1,38 +1,39 @@
 /* eslint-disable @next/next/no-img-element -- static brand asset */
 import { APP_STORE_URL, PLAY_STORE_URL } from "./StoreBadges";
 
-const COLUMNS: { heading: string; links: { label: string; href: string }[] }[] = [
-  {
-    heading: "About",
-    links: [
-      { label: "Blog", href: "#" },
-      { label: "FAQ", href: "#" },
-      { label: "Affiliates", href: "#" },
-    ],
-  },
-  {
-    heading: "Social",
-    links: [
-      { label: "X / Twitter", href: "#" },
-      { label: "Discord", href: "#" },
-      { label: "Instagram", href: "#" },
-    ],
-  },
-  {
-    heading: "Get the app",
-    links: [
-      { label: "iOS — App Store", href: APP_STORE_URL },
-      { label: "Android — Google Play", href: PLAY_STORE_URL },
-    ],
-  },
-  {
-    heading: "Legal",
-    links: [
-      { label: "Privacy Policy", href: "#" },
-      { label: "Terms of Service", href: "#" },
-    ],
-  },
-];
+const COLUMNS: { heading: string; links: { label: string; href: string }[] }[] =
+  [
+    {
+      heading: "About",
+      links: [
+        { label: "Blog", href: "#" },
+        { label: "FAQ", href: "#" },
+        { label: "Affiliates", href: "#" },
+      ],
+    },
+    {
+      heading: "Social",
+      links: [
+        { label: "X / Twitter", href: "#" },
+        { label: "Discord", href: "#" },
+        { label: "Instagram", href: "#" },
+      ],
+    },
+    {
+      heading: "Get the app",
+      links: [
+        { label: "iOS — App Store", href: APP_STORE_URL },
+        { label: "Android — Google Play", href: PLAY_STORE_URL },
+      ],
+    },
+    {
+      heading: "Legal",
+      links: [
+        { label: "Privacy Policy", href: "#" },
+        { label: "Terms of Service", href: "#" },
+      ],
+    },
+  ];
 
 export function LandingFooter() {
   return (
@@ -49,7 +50,9 @@ export function LandingFooter() {
               Chad<span className="text-brand">Wallet</span>
             </span>
           </div>
-          <p className="mt-3 text-sm text-muted">where degens become legends.</p>
+          <p className="mt-3 text-sm text-muted">
+            where degens become legends.
+          </p>
         </div>
 
         {COLUMNS.map((col) => (
@@ -63,7 +66,11 @@ export function LandingFooter() {
                   <a
                     href={link.href}
                     target={link.href.startsWith("http") ? "_blank" : undefined}
-                    rel={link.href.startsWith("http") ? "noopener noreferrer" : undefined}
+                    rel={
+                      link.href.startsWith("http")
+                        ? "noopener noreferrer"
+                        : undefined
+                    }
                     className="text-sm text-muted transition-colors hover:text-foreground"
                   >
                     {link.label}
@@ -77,8 +84,7 @@ export function LandingFooter() {
 
       <div className="border-t border-line">
         <p className="mx-auto max-w-6xl px-5 py-6 text-xs text-subtle sm:px-8">
-          © {new Date().getFullYear()} ChadWallet. Paper-trading demo — not
-          financial advice.
+          © {new Date().getFullYear()} ChadWallet.
         </p>
       </div>
     </footer>
