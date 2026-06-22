@@ -100,7 +100,7 @@ export function FeatureGrid() {
         </FeatureCard>
 
         {/* ── Feed ── */}
-        <FeatureCard kicker="Feed" title="discover and follow top traders" delay={80}>
+        <FeatureCard kicker="Feed" title="copy the wallets that are actually printing" delay={80}>
           <div className="rounded-xl border border-line bg-canvas/60 p-4">
             <div className="flex items-center gap-2">
               <ChadAvatar className="size-8" hue="linear-gradient(135deg,#6366f1,#9333ea)" />

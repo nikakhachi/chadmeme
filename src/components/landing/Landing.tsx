@@ -2,6 +2,7 @@ import { LandingNav } from "./LandingNav";
 import { Hero } from "./Hero";
 import { ProductShowcase } from "./ProductShowcase";
 import { FeatureGrid } from "./FeatureGrid";
+import { RewardsBand } from "./RewardsBand";
 import { AppMarquee } from "./AppMarquee";
 import { FinalCta } from "./FinalCta";
 import { LandingFooter } from "./LandingFooter";
@@ -20,6 +21,7 @@ export function Landing() {
         <Hero />
         <ProductShowcase />
         <FeatureGrid />
+        <RewardsBand />
         <AppMarquee />
         <FinalCta />
       </main>

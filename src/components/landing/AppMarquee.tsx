@@ -27,9 +27,9 @@ export function AppMarquee() {
           Download the app
         </p>
         <h2 className="mt-4 text-4xl font-extrabold tracking-tight sm:text-5xl">
-          your whole trading life,
+          hunt every memecoin.
           <br />
-          in one app.
+          every chain. one wallet.
         </h2>
         <StoreBadges className="mt-7 justify-center" />
       </Reveal>
