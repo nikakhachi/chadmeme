@@ -3,7 +3,7 @@ import "./globals.css";
 import { Providers } from "@/components/providers";
 
 export const metadata: Metadata = {
-  title: "ChadMeme — Trade memecoins on Solana",
+  title: "ChadWallet — Trade memecoins on Solana",
   description:
     "The best memecoin trading app. Trending tokens, live charts, and one-tap trading on Solana.",
   icons: { icon: "/logo.png", apple: "/logo.png" },
