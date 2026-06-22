@@ -183,25 +183,18 @@ export function FeatureGrid() {
           </div>
         </FeatureCard>
 
-        {/* ── Multichain & gasless ── */}
-        <FeatureCard kicker="Zero complexity" title="multichain &amp; gasless" delay={80}>
+        {/* ── Gasless ── */}
+        <FeatureCard kicker="Zero complexity" title="completely gasless" delay={80}>
           <div className="flex h-full flex-col items-center justify-center gap-4">
-            <div className="flex items-center gap-3">
-              {[
-                "linear-gradient(135deg,#14f195,#0b8f59)",
-                "linear-gradient(135deg,#6366f1,#312e81)",
-                "linear-gradient(135deg,#22d3ee,#0e7490)",
-                "linear-gradient(135deg,#f59e0b,#b45309)",
-              ].map((g, i) => (
-                <span
-                  key={i}
-                  className="lp-float size-12 rounded-2xl border border-white/10 shadow-lg"
-                  style={{ background: g, animationDelay: `${i * 0.6}s` }}
-                />
-              ))}
-            </div>
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-brand/30 bg-brand/10 px-3 py-1 text-xs font-semibold text-brand">
-              <Zap className="size-3.5" /> $0 gas fees
+            <span className="lp-float grid size-20 place-items-center rounded-3xl border border-brand/30 bg-brand/10 text-brand">
+              <Zap className="size-9" />
+            </span>
+            <p className="text-3xl font-extrabold">
+              $0
+              <span className="text-base font-medium text-muted"> gas</span>
+            </p>
+            <span className="rounded-full border border-line px-3 py-1 text-xs text-muted">
+              we cover the network fees — always
             </span>
           </div>
         </FeatureCard>
