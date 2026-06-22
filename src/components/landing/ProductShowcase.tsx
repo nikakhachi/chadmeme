@@ -24,22 +24,16 @@ export function ProductShowcase() {
         </p>
       </Reveal>
 
-      <Reveal delay={120} className="relative mt-14">
-        {/* Glow behind the frame */}
-        <div className="lp-glow pointer-events-none absolute inset-x-10 -bottom-10 top-10 -z-10 rounded-full bg-brand/15 blur-[100px]" />
+      <Reveal delay={120} className="relative mt-14 flex justify-center">
+        {/* Glow behind the device */}
+        <div className="lp-glow pointer-events-none absolute left-1/2 top-1/2 -z-10 size-[24rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-brand/15 blur-[100px]" />
 
-        <div className="lp-float-slow overflow-hidden rounded-2xl border border-line bg-panel shadow-2xl shadow-black/60">
-          {/* Faux browser chrome */}
-          <div className="flex items-center gap-2 border-b border-line bg-elevated/60 px-4 py-3">
-            <span className="size-3 rounded-full bg-down/80" />
-            <span className="size-3 rounded-full bg-yellow-500/80" />
-            <span className="size-3 rounded-full bg-brand/80" />
-            <div className="mx-auto hidden rounded-md bg-canvas px-4 py-1 text-xs text-subtle sm:block">
-              app.chadwallet.xyz
-            </div>
-          </div>
+        {/* Phone frame — sized to the video's native portrait resolution so it
+            stays crisp (a larger frame would upscale the low-res clip). */}
+        <div className="lp-float-slow relative w-[280px] rounded-[2.75rem] border-[10px] border-elevated bg-black shadow-2xl shadow-black/60 sm:w-[300px]">
+          <div className="absolute left-1/2 top-2.5 z-10 h-5 w-28 -translate-x-1/2 rounded-full bg-elevated" />
           <video
-            className="block aspect-[16/10] w-full object-cover"
+            className="block aspect-[334/720] w-full rounded-[2.1rem] object-cover"
             src="/assets/video/chadwallet.mp4"
             autoPlay
             muted
