@@ -126,7 +126,6 @@ button:disabled,
 .lp-spin-slow { animation: lp-spin 80s linear infinite; }
 /* Marquee track is rendered twice; translating -50% loops seamlessly. */
 .lp-marquee { animation: lp-marquee 50s linear infinite; }
-.lp-marquee:hover { animation-play-state: paused; }
 
 @media (prefers-reduced-motion: reduce) {
   .lp-rise, .lp-float, .lp-float-slow, .lp-twinkle, .lp-aurora,
