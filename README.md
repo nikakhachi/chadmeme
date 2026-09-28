@@ -1,4 +1,4 @@
-# ChadWallet
+# ChadMeme
 
 A fomo.family-style memecoin trading app for **Solana** — live market data, TradingView price charts, real on-chain trading, and a profile with net-worth & activity.
 
